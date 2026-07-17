@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dashboard คิวคอนกรีต กรกฎาคม 2569</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI','Helvetica Neue',sans-serif;background:#f0f3f8;color:#2c3e50;font-size:14px}
+.hdr{background:linear-gradient(135deg,#1a3a6b 0%,#0d2040 100%);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.stc-badge{background:#f0a500;color:#1a3a6b;font-weight:800;font-size:16px;padding:5px 13px;border-radius:6px;letter-spacing:1px}
+.hdr-title h1{font-size:16px;font-weight:700}
+.hdr-title p{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
+.hdr-meta{font-size:11px;color:rgba(255,255,255,.5);text-align:right}
+.nav{background:#fff;border-bottom:1px solid #dce3ee;padding:0 24px;display:flex;gap:0}
+.nav-btn{padding:11px 20px;font-size:13px;font-weight:600;cursor:pointer;background:none;border:none;border-bottom:3px solid transparent;color:#8a96b0;transition:all .15s}
+.nav-btn.active{color:#1a3a6b;border-bottom-color:#1a3a6b}
+.cal-bar{background:#fff;border-bottom:1px solid #dce3ee;padding:10px 24px;display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.cal-all-btn{width:60px;height:60px;border-radius:10px;border:1.5px solid #c8d0e0;background:#f7f9fc;color:#1a3a6b;font-size:10px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .15s}
+.cal-all-btn.active{background:#f0a500;border-color:#d48f00;color:#1a3a6b}
+.cal-grid{display:grid;grid-template-columns:repeat(7,32px);gap:3px}
+.cal-dow{width:32px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#8a96b0}
+.cal-day{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:7px;font-size:12px;font-weight:700;transition:all .15s;position:relative;border:none;cursor:default;background:transparent;color:#d1d5db}
+.cal-day.has-data{background:#eaf0fb;color:#1a3a6b;cursor:pointer}
+.cal-day.has-data:hover{background:#1a3a6b;color:#fff}
+.cal-day.has-data.active{background:#1a3a6b;color:#fff;border:2px solid #f0a500}
+.cal-day.has-data::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:#f0a500}
+.cal-day.has-data.active::after{background:#fff}
+.content{max-width:1440px;margin:0 auto;padding:16px 20px 32px}
+.notice{background:#eaf0fb;border:1px solid #b9ccee;border-radius:8px;padding:8px 14px;font-size:12px;color:#1a3a6b;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.sec-title{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.sec-title::before{content:'';display:inline-block;width:4px;height:18px;background:#f0a500;border-radius:2px}
+.sec-title span{font-size:14px;font-weight:700;color:#1a3a6b}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.kpi-card{background:#fff;border-radius:10px;padding:16px 18px;border:1px solid #dce3ee;border-top:4px solid #1a3a6b}
+.kpi-label{font-size:11px;color:#8a96b0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.kpi-sub{font-size:10px;color:#b0bcd0;margin-bottom:6px}
+.kpi-val{font-size:26px;font-weight:800;color:#1a3a6b}
+.kpi-unit{font-size:12px;font-weight:400;color:#8a96b0;margin-left:2px}
+.kpi-pct{font-size:11px;color:#8a96b0;margin-top:3px}
+.chart-2{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
+.chart-card{background:#fff;border-radius:10px;padding:18px 20px;border:1px solid #dce3ee;overflow:hidden}
+.chart-card h3{font-size:13px;font-weight:700;color:#1a3a6b;margin-bottom:12px}
+.chart-wrap{position:relative;width:100%}
+.exec-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.exec-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.exec-card{background:#fff;border-radius:10px;padding:18px 20px;border:1px solid #dce3ee}
+.exec-card h3{font-size:13px;font-weight:700;color:#1a3a6b;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.exec-loc-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f3f8}
+.exec-loc-row:last-child{border-bottom:none}
+.exec-bar{height:6px;border-radius:3px;margin-top:3px}
+.prod-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f0f3f8}
+.prod-row:last-child{border-bottom:none}
+.prod-rank{width:22px;height:22px;border-radius:50%;background:#1a3a6b;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.obs-item{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #f0f3f8;font-size:12px}
+.obs-item:last-child{border-bottom:none}
+.split-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f3f8;font-size:12px}
+.split-row:last-child{border-bottom:none}
+.fuel-rate{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid #f0f3f8}
+.fuel-rate:last-child{border-bottom:none}
+.tbl-card{background:#fff;border-radius:10px;padding:18px 20px;border:1px solid #dce3ee;overflow-x:auto;margin-bottom:14px}
+.tbl-card h3{font-size:13px;font-weight:700;color:#1a3a6b;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:#1a3a6b;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:600;white-space:nowrap}
+thead th.num{text-align:right}
+thead th:first-child{border-radius:6px 0 0 0}
+thead th:last-child{border-radius:0 6px 0 0}
+tbody tr:nth-child(even){background:#f7f9fc}
+tbody tr:hover{background:#eaf0fb}
+tbody td{padding:8px 10px;border-bottom:1px solid #f0f3f8}
+tbody td.num{text-align:right;font-weight:600;color:#1a3a6b}
+tbody td.zero{text-align:right;color:#c8d0e0}
+tfoot td{background:#f0a500;color:#1a3a6b;font-weight:800;padding:8px 10px}
+tfoot td.num{text-align:right}
+.loc-tag{display:inline-block;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:3px}
+.loc-ptya{background:#dbeafe;color:#1a4bab}
+.loc-nawg{background:#d1fae5;color:#155724}
+.loc-nong{background:#fce4e4;color:#8b1a1a}
+.loc-ptum{background:#ede9fe;color:#4c1d95}
+canvas{display:block;max-width:100%}
+@media(max-width:900px){.chart-2,.exec-grid-2,.exec-grid-3{grid-template-columns:1fr}}
+@media(max-width:600px){.kpi-row{grid-template-columns:repeat(2,1fr)};.hdr{padding:10px 14px}}
+@media print{.hdr,.nav,.cal-bar{-webkit-print-color-adjust:exact;print-color-adjust:exact}.nav,.cal-bar{display:none!important}.content{padding:8px}}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="hdr-title">
+      <h1>Dashboard คิวคอนกรีตประจำวัน</h1>
+      <p>กรกฎาคม 2569</p>
+    </div>
+  </div>
+  <div class="hdr-meta">อัปเดต: 17 ก.ค. 2569<br>ข้อมูล 16 วัน จาก 31 วัน</div>
+</header>
+<nav class="nav">
+  <button class="nav-btn" id="navExec" onclick="setView('exec')">&#128203; สรุปผู้บริหาร</button>
+  <button class="nav-btn active" id="navDash" onclick="setView('dash')">&#128202; Dashboard</button>
+  <button class="nav-btn" id="navFuel" onclick="setView('fuel')">&#9981; น้ำมัน</button>
+</nav>
+<div class="cal-bar" id="calBar">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+    <button class="cal-all-btn active" id="calAllBtn" onclick="selectDate('all')">
+      <span style="font-size:22px">&#128203;</span>ทั้งหมด
+    </button>
+    <div style="font-size:10px;color:#8a96b0">รวมสะสม</div>
+  </div>
+  <div style="width:1px;background:#dce3ee;align-self:stretch"></div>
+  <div>
+    <div style="font-size:11px;color:#6b7a99;font-weight:600;margin-bottom:5px">&#128197; กรกฎาคม 2569 — คลิกวันที่มีข้อมูล</div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div style="display:flex;gap:14px;margin-top:6px">
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#8a96b0"><div style="width:10px;height:10px;border-radius:3px;background:#eaf0fb;border:1px solid #1a3a6b"></div>มีข้อมูล</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#8a96b0"><div style="width:10px;height:10px;border-radius:3px;background:#f3f4f6;border:1px solid #e5e7eb"></div>ยังไม่มีข้อมูล</div>
+    </div>
+  </div>
+</div>
+<div class="content">
+  <div class="notice" id="noticeBar"><span>&#128203;</span><span id="noticeText">แสดงคิวรวมสะสมทั้งเดือน</span></div>
+  <div id="viewExec" style="display:none">
+    <div class="sec-title"><span>&#128203; สรุปผู้บริหาร &middot; กรกฎาคม 2569</span></div>
+    <div class="kpi-row" id="execKpiRow"></div>
+    <div class="exec-grid-2">
+      <div class="exec-card"><h3>&#127981; การผลิตแยกตามสถานที่</h3><div id="execLocTable"></div></div>
+      <div class="exec-card"><h3>&#129449; สัดส่วนการผลิต</h3><div class="chart-wrap"><canvas id="execPieChart"></canvas></div></div>
+    </div>
+    <div class="exec-card" style="margin-bottom:14px"><h3>&#127942; สินค้าผลิตสูงสุด 10 อันดับ</h3><div id="execTopProds"></div></div>
+    <div class="exec-grid-3">
+      <div class="exec-card"><h3>&#9878; ผสมเสร็จ vs ผลิตภัณฑ์</h3><div id="execSplit"></div></div>
+      <div class="exec-card"><h3>&#129383; เสาเข็มแยกสถานที่</h3><div id="execPile"></div></div>
+      <div class="exec-card"><h3>&#129704; แผ่นพื้นแยกสถานที่</h3><div id="execFloor"></div></div>
+    </div>
+    <div class="exec-card" style="margin-bottom:14px"><h3>&#128200; แนวโน้มการผลิตรายวัน</h3><div class="chart-wrap"><canvas id="execTrendChart"></canvas></div></div>
+    <div class="exec-grid-2">
+      <div class="exec-card"><h3>&#9981; สรุปการเบิกน้ำมัน</h3><div id="execFuelSummary"></div></div>
+      <div class="exec-card"><h3>&#128161; ข้อสังเกตสำคัญ</h3><div id="execObs"></div></div>
+    </div>
+  </div>
+  <div id="viewDash">
+    <div class="kpi-row" id="dashKpiRow"></div>
+    <div class="chart-2">
+      <div class="chart-card"><h3 id="barTitle">&#128202; คิวแยกตามประเภทสินค้า</h3><div class="chart-wrap"><canvas id="barChart"></canvas></div></div>
+      <div class="chart-card"><h3>&#127981; สัดส่วนตามสถานที่</h3><div class="chart-wrap"><canvas id="donutChart"></canvas></div></div>
+    </div>
+    <div class="chart-card" style="margin-bottom:14px"><h3>&#128200; แนวโน้มคิวรายวัน</h3><div class="chart-wrap"><canvas id="trendChart"></canvas></div></div>
+    <div class="tbl-card">
+      <h3 id="tblTitle">&#128203; รายละเอียดคิวแยกตามสินค้า</h3>
+      <table>
+        <thead><tr><th>ประเภทสินค้า</th><th>สถานที่</th><th class="num" id="colDay">คิวสะสม (ลบ.ม.)</th><th class="num">คิวสะสม (ลบ.ม.)</th><th class="num">% ของรวม</th></tr></thead>
+        <tbody id="tblBody"></tbody>
+        <tfoot><tr><td colspan="2">รวมทั้งหมด</td><td class="num" id="footDay">—</td><td class="num" id="footTotal">—</td><td class="num">100%</td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+  <div id="viewFuel" style="display:none">
+    <div class="kpi-row" id="fuelKpiRow"></div>
+    <div class="exec-grid-3">
+      <div class="exec-card" style="background:#fffbeb;border-top:4px solid #f59e0b">
+        <div style="font-size:11px;color:#8a96b0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">&#9889; อัตราใช้น้ำมัน &middot; รถแบคโฮ JCB (พัทยา)</div>
+        <div style="font-size:24px;font-weight:800;color:#1a3a6b">0.69<span style="font-size:12px;font-weight:400;color:#8a96b0;margin-left:2px">ล./คิว</span></div>
+        <div style="font-size:11px;color:#8a96b0;margin-top:4px">คิว 1,594.25 ลบ.ม. &middot; น้ำมัน 1,100 ลิตร</div>
+      </div>
+      <div class="exec-card" style="background:#f0fdf4;border-top:4px solid #3b82f6">
+        <div style="font-size:11px;color:#8a96b0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">&#9889; อัตราใช้น้ำมัน &middot; รถตัก (พัทยา)</div>
+        <div style="font-size:24px;font-weight:800;color:#27ae60">0.71<span style="font-size:12px;font-weight:400;color:#8a96b0;margin-left:2px">ล./คิว</span></div>
+        <div style="font-size:11px;color:#8a96b0;margin-top:4px">คิว 509.25 ลบ.ม. &middot; น้ำมัน 360 ลิตร</div>
+      </div>
+      <div class="exec-card" style="background:#f0fdf4;border-top:4px solid #22c55e">
+        <div style="font-size:11px;color:#8a96b0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">&#9889; อัตราใช้น้ำมัน &middot; รถตัก (นาวัง)</div>
+        <div style="font-size:24px;font-weight:800;color:#27ae60">0.36<span style="font-size:12px;font-weight:400;color:#8a96b0;margin-left:2px">ล./คิว</span></div>
+        <div style="font-size:11px;color:#8a96b0;margin-top:4px">คิว 1,236.35 ลบ.ม. &middot; น้ำมัน 440 ลิตร</div>
+      </div>
+    </div>
+    <div class="chart-2">
+      <div class="chart-card"><h3 id="fuelChartTitle">&#9981; การเบิกน้ำมันรายวัน (ลิตร)</h3><div class="chart-wrap"><canvas id="fuelChart"></canvas></div></div>
+      <div class="tbl-card" style="margin-bottom:0;border:none;padding:0">
+        <h3 style="font-size:13px;font-weight:700;color:#1a3a6b;margin-bottom:14px">&#128203; รายละเอียดการเบิกน้ำมัน</h3>
+        <table>
+          <thead><tr><th>วันที่</th><th class="num">แบคโฮ JCB<br><span style="font-weight:400;font-size:10px">(พัทยา)</span></th><th class="num">รถตัก<br><span style="font-weight:400;font-size:10px">(พัทยา)</span></th><th class="num">รถตัก<br><span style="font-weight:400;font-size:10px">(นาวัง)</span></th><th class="num">รวม</th></tr></thead>
+          <tbody id="fuelTblBody"></tbody>
+          <tfoot><tr><td>รวม</td><td class="num" id="fuelFootBH">—</td><td class="num" id="fuelFootPT">—</td><td class="num" id="fuelFootNW">—</td><td class="num" id="fuelFootTot">—</td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+/* ══ CONFIG ══════════════════════════════════════════════ */
+const LOCATIONS = {
+  'ptya':{ label:'พัทยา',    color:'#3b82f6' },
+  'nawg':{ label:'นาวัง',    color:'#22c55e' },
+  'nong':{ label:'หนองปรือ', color:'#ef4444' },
+  'ptum':{ label:'ปทุมธานี', color:'#a855f7' },
+};
+const PRODUCTS = [
+  {key:'P1',              label:'P1',             loc:'ptya',group:'ผสมเสร็จ'},
+  {key:'P2',              label:'P2',             loc:'ptya',group:'ผสมเสร็จ'},
+  {key:'ท่อกลม',          label:'ท่อกลม',         loc:'nawg',group:'ท่อ-บ่อ'},
+  {key:'บ่ออัด',          label:'บ่ออัด',         loc:'nawg',group:'ท่อ-บ่อ'},
+  {key:'บ่อเท',           label:'บ่อเท',          loc:'nawg',group:'ท่อ-บ่อ'},
+  {key:'แผ่นพื้น_นว',    label:'แผ่นพื้น',       loc:'nawg',group:'แผ่น'},
+  {key:'แผ่นทางเท้า',    label:'แผ่นทางเท้า',    loc:'nawg',group:'แผ่น'},
+  {key:'รางระบายน้ำอัด', label:'รางระบายน้ำ',    loc:'nawg',group:'ราง-ขอบ'},
+  {key:'ขอบคันหิน',      label:'ขอบคันหิน',      loc:'nawg',group:'ราง-ขอบ'},
+  {key:'บล็อกคัลเวิร์ท', label:'บล็อกคัลเวิร์ท', loc:'nawg',group:'บล็อก-รั้ว'},
+  {key:'รั้วสำเร็จรูป',  label:'รั้วสำเร็จรูป',  loc:'nawg',group:'บล็อก-รั้ว'},
+  {key:'กำแพงกันดิน',    label:'กำแพงกันดิน',    loc:'nawg',group:'บล็อก-รั้ว'},
+  {key:'ผสมเสร็จ',       label:'ผสมเสร็จ',       loc:'nawg',group:'ผสมเสร็จ'},
+  {key:'อื่นๆ',           label:'อื่นๆ',           loc:'nawg',group:'อื่นๆ'},
+  {key:'เสาเข็ม_นป',     label:'เสาเข็ม',        loc:'nong',group:'เสาเข็ม'},
+  {key:'เสาเข็ม_ปท',     label:'เสาเข็ม',        loc:'ptum',group:'เสาเข็ม'},
+  {key:'แผ่นพื้น_ปท',    label:'แผ่นพื้น',       loc:'ptum',group:'แผ่น'},
+];
+const DATA_DAYS = 16;
+
+/* ══ DATA ════════════════════════════════════════════════ */
+const DAILY = [
+// วันที่ 1-10 มีข้อมูล
+  {label:'1 ก.ค.',  P1:229.75,P2:0,'ท่อกลม':25.4,'บ่ออัด':6.55,'บ่อเท':11.3,'แผ่นพื้น_นว':48.4,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':0,'ขอบคันหิน':10.45,'บล็อกคัลเวิร์ท':109.05,'รั้วสำเร็จรูป':20.9,'กำแพงกันดิน':0,'ผสมเสร็จ':0,'อื่นๆ':0,'เสาเข็ม_นป':0,'เสาเข็ม_ปท':3.86,'แผ่นพื้น_ปท':15.83},
+  {label:'2 ก.ค.',  P1:68.5,P2:0,'ท่อกลม':46.7,'บ่ออัด':0,'บ่อเท':12.7,'แผ่นพื้น_นว':40.4,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':2.5,'ขอบคันหิน':0,'บล็อกคัลเวิร์ท':101.5,'รั้วสำเร็จรูป':21.2,'กำแพงกันดิน':0,'ผสมเสร็จ':0,'อื่นๆ':1.1,'เสาเข็ม_นป':0,'เสาเข็ม_ปท':3.86,'แผ่นพื้น_ปท':0},
+  {label:'3 ก.ค.',  P1:197.5,P2:0,'ท่อกลม':11.7,'บ่ออัด':3.67,'บ่อเท':6.6,'แผ่นพื้น_นว':49,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':2,'ขอบคันหิน':0,'บล็อกคัลเวิร์ท':86.5,'รั้วสำเร็จรูป':21.3,'กำแพงกันดิน':0,'ผสมเสร็จ':0,'อื่นๆ':0,'เสาเข็ม_นป':0,'เสาเข็ม_ปท':0,'แผ่นพื้น_ปท':20.84},
+  {label:'4 ก.ค.',  P1:15.5,P2:0,'ท่อกลม':0,'บ่ออัด':0,'บ่อเท':0,'แผ่นพื้น_นว':43.6,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':0,'ขอบคันหิน':0,'บล็อกคัลเวิร์ท':0,'รั้วสำเร็จรูป':17.9,'กำแพงกันดิน':0,'ผสมเสร็จ':0,'อื่นๆ':0,'เสาเข็ม_นป':0,'เสาเข็ม_ปท':7.72,'แผ่นพื้น_ปท':0},
+  {label:'5 ก.ค.',  P1:71,P2:0,'ท่อกลม':0,'บ่ออัด':0,'บ่อเท':0,'แผ่นพื้น_นว':0,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':0,'ขอบคันหิน':0,'บล็อกคัลเวิร์ท':0,'รั้วสำเร็จรูป':0,'กำแพงกันดิน':0,'ผสมเสร็จ':0,'อื่นๆ':0,'เสาเข็ม_นป':0,'เสาเข็ม_ปท':0,'แผ่นพื้น_ปท':20.84},
+  {label:'6 ก.ค.',  P1:104,P2:0,'ท่อกลม':66.5,'บ่ออัด':0,'บ่อเท':15.8,'แผ่นพื้น_นว':50.2,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':2,'ขอบคันหิน':10.3,'บล็อกคัลเวิร์ท':94.8,'รั้วสำเร็จรูป':20.5,'กำแพงกันดิน':0,'ผสมเสร็จ':0,'อื่นๆ':0.4,'เสาเข็ม_นป':30,'เสาเข็ม_ปท':3.86,'แผ่นพื้น_ปท':10.42},
+  {label:'7 ก.ค.',  P1:161,P2:0,'ท่อกลม':28.6,'บ่ออัด':5.35,'บ่อเท':19.8,'แผ่นพื้น_นว':49.6,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':0,'ขอบคันหิน':10.35,'บล็อกคัลเวิร์ท':100.95,'รั้วสำเร็จรูป':21.4,'กำแพงกันดิน':0,'ผสมเสร็จ':19,'อื่นๆ':0.3,'เสาเข็ม_นป':30,'เสาเข็ม_ปท':0,'แผ่นพื้น_ปท':21.23},
+  {label:'8 ก.ค.',  P1:113.75,P2:0,'ท่อกลม':28,'บ่ออัด':6.05,'บ่อเท':20.5,'แผ่นพื้น_นว':49.1,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':0,'ขอบคันหิน':7.2,'บล็อกคัลเวิร์ท':58.3,'รั้วสำเร็จรูป':20.8,'กำแพงกันดิน':0,'ผสมเสร็จ':0,'อื่นๆ':0.4,'เสาเข็ม_นป':27.5,'เสาเข็ม_ปท':0,'แผ่นพื้น_ปท':20.84},
+  {label:'9 ก.ค.',  P1:149.5,P2:34.5,'ท่อกลม':27.3,'บ่ออัด':6.95,'บ่อเท':18.4,'แผ่นพื้น_นว':49.2,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':0,'ขอบคันหิน':0,'บล็อกคัลเวิร์ท':58.15,'รั้วสำเร็จรูป':21.3,'กำแพงกันดิน':14.4,'ผสมเสร็จ':0,'อื่นๆ':0.8,'เสาเข็ม_นป':35.5,'เสาเข็ม_ปท':3.86,'แผ่นพื้น_ปท':15.44},
+  {label:'10 ก.ค.', P1:126.25,P2:52.5,'ท่อกลม':33.4,'บ่ออัด':0,'บ่อเท':11,'แผ่นพื้น_นว':49.4,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':0,'ขอบคันหิน':0,'บล็อกคัลเวิร์ท':56.85,'รั้วสำเร็จรูป':21.1,'กำแพงกันดิน':19.8,'ผสมเสร็จ':0,'อื่นๆ':0.8,'เสาเข็ม_นป':19,'เสาเข็ม_ปท':0,'แผ่นพื้น_ปท':10.42},
+  {label:'11 ก.ค.', P1:0,P2:61.5,'ท่อกลม':72.5,'บ่ออัด':0,'บ่อเท':14.8,'แผ่นพื้น_นว':51.2,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':0,'ขอบคันหิน':4.8,'บล็อกคัลเวิร์ท':61.2,'รั้วสำเร็จรูป':20.1,'กำแพงกันดิน':13.4,'ผสมเสร็จ':0,'อื่นๆ':0.8,'เสาเข็ม_นป':18.5,'เสาเข็ม_ปท':0,'แผ่นพื้น_ปท':25.86},
+  {label:'12 ก.ค.', P1:0,P2:175.5,'ท่อกลม':0,'บ่ออัด':0,'บ่อเท':0,'แผ่นพื้น_นว':0,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':0,'ขอบคันหิน':0,'บล็อกคัลเวิร์ท':0,'รั้วสำเร็จรูป':0,'กำแพงกันดิน':0,'ผสมเสร็จ':0,'อื่นๆ':0,'เสาเข็ม_นป':0,'เสาเข็ม_ปท':0,'แผ่นพื้น_ปท':10.04},
+  {label:'13 ก.ค.', P1:112,P2:0,'ท่อกลม':29.8,'บ่ออัด':0,'บ่อเท':15.3,'แผ่นพื้น_นว':49.4,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':0,'ขอบคันหิน':10.35,'บล็อกคัลเวิร์ท':20.35,'รั้วสำเร็จรูป':21,'กำแพงกันดิน':0,'ผสมเสร็จ':0,'อื่นๆ':0.4,'เสาเข็ม_นป':30,'เสาเข็ม_ปท':6.18,'แผ่นพื้น_ปท':10.04},
+  {label:'14 ก.ค.', P1:85.5,P2:86.5,'ท่อกลม':84.1,'บ่ออัด':0,'บ่อเท':11.4,'แผ่นพื้น_นว':50.2,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':0,'ขอบคันหิน':9.6,'บล็อกคัลเวิร์ท':48.6,'รั้วสำเร็จรูป':20.8,'กำแพงกันดิน':9.5,'ผสมเสร็จ':0,'อื่นๆ':0.4,'เสาเข็ม_นป':29.5,'เสาเข็ม_ปท':0,'แผ่นพื้น_ปท':20.84},
+  {label:'15 ก.ค.', P1:89.25,P2:47.75,'ท่อกลม':46.4,'บ่ออัด':6.8,'บ่อเท':9.1,'แผ่นพื้น_นว':49.3,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':0,'ขอบคันหิน':4.8,'บล็อกคัลเวิร์ท':49.95,'รั้วสำเร็จรูป':21.5,'กำแพงกันดิน':12.7,'ผสมเสร็จ':0,'อื่นๆ':0.4,'เสาเข็ม_นป':24.5,'เสาเข็ม_ปท':5.4,'แผ่นพื้น_ปท':15.44},
+  {label:'16 ก.ค.', P1:70.75,P2:51,'ท่อกลม':39,'บ่ออัด':7.55,'บ่อเท':7.7,'แผ่นพื้น_นว':50.1,'แผ่นทางเท้า':0,'รางระบายน้ำอัด':0,'ขอบคันหิน':5.3,'บล็อกคัลเวิร์ท':21.05,'รั้วสำเร็จรูป':20.9,'กำแพงกันดิน':0,'ผสมเสร็จ':0,'อื่นๆ':0.1,'เสาเข็ม_นป':18,'เสาเข็ม_ปท':0,'แผ่นพื้น_ปท':10.04},
+];
+for(let d=DATA_DAYS+1;d<=31;d++){const r={label:d+' ก.ค.'};PRODUCTS.forEach(p=>{r[p.key]=0;});DAILY.push(r);}
+
+const FUEL_DAILY = [
+{label:'1 ก.ค.',  backhoe:100,loaderPT:0,  loaderNW:0  },
+  {label:'2 ก.ค.',  backhoe:100,loaderPT:0,  loaderNW:60 },
+  {label:'3 ก.ค.',  backhoe:100,loaderPT:0,  loaderNW:60 },
+  {label:'4 ก.ค.',  backhoe:0,  loaderPT:0,  loaderNW:0  },
+  {label:'5 ก.ค.',  backhoe:100,loaderPT:0,  loaderNW:0  },
+  {label:'6 ก.ค.',  backhoe:100,loaderPT:60, loaderNW:0  },
+  {label:'7 ก.ค.',  backhoe:0,  loaderPT:0,  loaderNW:60 },
+  {label:'8 ก.ค.',  backhoe:100,loaderPT:60, loaderNW:0  },
+  {label:'9 ก.ค.',  backhoe:100,loaderPT:0,  loaderNW:60 },
+  {label:'10 ก.ค.', backhoe:100,loaderPT:60, loaderNW:60 },
+  {label:'11 ก.ค.', backhoe:0,  loaderPT:0,  loaderNW:40 },
+  {label:'12 ก.ค.', backhoe:0,  loaderPT:60, loaderNW:0  },
+  {label:'13 ก.ค.', backhoe:100, loaderPT:0,  loaderNW:0   },
+  {label:'14 ก.ค.', backhoe:100, loaderPT:60, loaderNW:40  },
+  {label:'15 ก.ค.', backhoe:0,   loaderPT:0,  loaderNW:60  },
+  {label:'16 ก.ค.', backhoe:100, loaderPT:60, loaderNW:0   },
+];
+for(let d=13;d<=31;d++)FUEL_DAILY.push({label:d+' ก.ค.',backhoe:0,loaderPT:0,loaderNW:0});
+
+/* ══ HELPERS ═════════════════════════════════════════════ */
+const fmtN=(v)=>(+(v||0)).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtI=(v)=>(+(v||0)).toLocaleString('th-TH');
+const f2=(v)=>(+(v||0)).toFixed(2);
+const dayTotal=(d)=>PRODUCTS.reduce((s,p)=>s+(+(d[p.key]||0)),0);
+const locTotal=(d,loc)=>PRODUCTS.filter(p=>p.loc===loc).reduce((s,p)=>s+(+(d[p.key]||0)),0);
+const cumulative=()=>PRODUCTS.reduce((acc,p)=>{acc[p.key]=DAILY.slice(0,DATA_DAYS).reduce((s,d)=>s+(+(d[p.key]||0)),0);return acc;},{});
+const monthGrandTotal=()=>dayTotal(cumulative());
+
+/* ══════════════════════════════════════════════════════════
+   PURE CANVAS CHART FUNCTIONS — ใช้งานได้ออฟไลน์ 100%
+══════════════════════════════════════════════════════════ */
+function setupCanvas(id,h){
+  const el=document.getElementById(id);
+  if(!el)return null;
+  const parent=el.parentElement;
+  const W=Math.max(parent ? (parent.clientWidth||parent.offsetWidth||parent.getBoundingClientRect().width||360) : 360, 160);
+  const H=h||220;
+  const dpr=window.devicePixelRatio||1;
+  el.width=W*dpr; el.height=H*dpr;
+  el.style.width=W+'px'; el.style.height=H+'px';
+  const ctx=el.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+  return{ctx,W,H};
+}
+
+function drawBar(id,labels,values,colors,h){
+  const c=setupCanvas(id,h||230);
+  if(!c)return;
+  const{ctx,W,H}=c;
+  const pad={t:20,r:8,b:72,l:52};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+  const max=Math.max(...values,1)*1.18;
+  const n=labels.length;
+  const gap=cW/Math.max(n,1);
+  const bw=Math.max(6,gap*0.62);
+
+  // Grid + Y labels
+  for(let i=0;i<=5;i++){
+    const y=pad.t+cH*(1-i/5);
+    ctx.strokeStyle='#f0f3f8'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle='#8a96b0'; ctx.font='9px sans-serif'; ctx.textAlign='right';
+    const v=max*i/5;
+    ctx.fillText(v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(0),pad.l-4,y+3);
+  }
+
+  // Bars
+  values.forEach((v,i)=>{
+    if(v<=0)return;
+    const bh=(v/max)*cH;
+    const x=pad.l+gap*i+gap/2-bw/2;
+    const y=pad.t+cH-bh;
+    ctx.fillStyle=colors[i%colors.length];
+    ctx.beginPath();
+    if(ctx.roundRect)ctx.roundRect(x,y,bw,bh,[3,3,0,0]);
+    else ctx.rect(x,y,bw,bh);
+    ctx.fill();
+    // Value on top
+    ctx.fillStyle='#2c3e50'; ctx.font='bold 8px sans-serif'; ctx.textAlign='center';
+    ctx.fillText(v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(0),x+bw/2,y-3);
+    // X label rotated
+    ctx.save();
+    ctx.translate(x+bw/2,pad.t+cH+10);
+    ctx.rotate(-Math.PI/5);
+    ctx.fillStyle='#8a96b0'; ctx.font='9px sans-serif'; ctx.textAlign='right';
+    ctx.fillText(labels[i],0,0);
+    ctx.restore();
+  });
+
+  // Axes
+  ctx.strokeStyle='#dce3ee'; ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+cH);ctx.lineTo(W-pad.r,pad.t+cH);ctx.stroke();
+}
+
+function drawDonut(id,labels,values,colors,h){
+  const c=setupCanvas(id,h||230);
+  if(!c)return;
+  const{ctx,W,H}=c;
+  const total=values.reduce((a,b)=>a+b,0);
+  if(total===0)return;
+  const cx=W*0.38, cy=H*0.46;
+  const outerR=Math.min(cx,cy)*0.86;
+  const innerR=outerR*0.56;
+  let angle=-Math.PI/2;
+  values.forEach((v,i)=>{
+    if(v<=0)return;
+    const sweep=(v/total)*Math.PI*2;
+    ctx.beginPath();
+    ctx.arc(cx,cy,outerR,angle,angle+sweep);
+    ctx.arc(cx,cy,innerR,angle+sweep,angle,true);
+    ctx.closePath();
+    ctx.fillStyle=colors[i]; ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+    if((v/total)>0.06){
+      const ma=angle+sweep/2;
+      const lr=(outerR+innerR)/2;
+      ctx.fillStyle='#fff'; ctx.font='bold 9px sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(((v/total)*100).toFixed(0)+'%',cx+Math.cos(ma)*lr,cy+Math.sin(ma)*lr);
+    }
+    angle+=sweep;
+  });
+  // Center text
+  ctx.fillStyle='#1a3a6b'; ctx.font='bold 12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(fmtN(total),cx,cy-7);
+  ctx.fillStyle='#8a96b0'; ctx.font='10px sans-serif'; ctx.fillText('ลบ.ม.',cx,cy+8);
+  // Legend
+  let ly=H*0.08;
+  const lx=W*0.7;
+  labels.forEach((lbl,i)=>{
+    if(values[i]<=0)return;
+    ctx.fillStyle=colors[i]; ctx.fillRect(lx,ly,10,10);
+    ctx.fillStyle='#2c3e50'; ctx.font='10px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText(lbl,lx+14,ly);
+    ctx.fillStyle='#8a96b0'; ctx.font='9px sans-serif';
+    ctx.fillText(fmtN(values[i]),lx+14,ly+13);
+    ly+=40;
+  });
+}
+
+function drawStackedBar(id,labels,datasets,h){
+  const c=setupCanvas(id,h||200);
+  if(!c)return;
+  const{ctx,W,H}=c;
+  const pad={t:14,r:10,b:62,l:52};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+  const totals=labels.map((_,i)=>datasets.reduce((s,d)=>s+(d.data[i]||0),0));
+  const max=Math.max(...totals,1)*1.12;
+  const n=labels.length;
+  const gap=cW/Math.max(n,1);
+  const bw=Math.max(10,gap*0.68);
+  // Show label every N steps if crowded
+  const labelStep=Math.max(1,Math.ceil(n/(Math.floor((W-pad.l)/28))));
+
+  // Grid
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH*(1-i/4);
+    ctx.strokeStyle='#f0f3f8'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle='#8a96b0'; ctx.font='9px sans-serif'; ctx.textAlign='right';
+    const v=max*i/4;
+    ctx.fillText(v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(0),pad.l-4,y+3);
+  }
+
+  // Stacked bars
+  labels.forEach((lbl,i)=>{
+    let sy=pad.t+cH;
+    const x=pad.l+gap*i+gap/2-bw/2;
+    datasets.forEach(ds=>{
+      const v=ds.data[i]||0;
+      if(v<0.5)return;
+      const bh=(v/max)*cH;
+      ctx.fillStyle=ds.color+'cc';
+      ctx.fillRect(x,sy-bh,bw,bh);
+      ctx.strokeStyle=ds.color; ctx.lineWidth=0.8;
+      ctx.strokeRect(x,sy-bh,bw,bh);
+      sy-=bh;
+    });
+    // X label — skip if crowded
+    if(i%labelStep===0){
+      ctx.save();
+      ctx.translate(x+bw/2,pad.t+cH+8);
+      ctx.rotate(-Math.PI/5.5);
+      ctx.fillStyle='#6b7a99'; ctx.font='bold 9px sans-serif'; ctx.textAlign='right';
+      ctx.fillText(lbl,0,0);
+      ctx.restore();
+    }
+  });
+
+  // Axes
+  ctx.strokeStyle='#dce3ee'; ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+cH);ctx.lineTo(W-pad.r,pad.t+cH);ctx.stroke();
+
+  // Legend
+  const legCount=datasets.length;
+  const legItemW=Math.max(80,(W-pad.l)/legCount);
+  datasets.forEach((ds,i)=>{
+    const lx=pad.l+legItemW*i;
+    const ly=H-10;
+    ctx.fillStyle=ds.color; ctx.fillRect(lx,ly-8,10,9);
+    ctx.fillStyle='#6b7a99'; ctx.font='9px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText(ds.label.length>12?ds.label.slice(0,12)+'…':ds.label,lx+13,ly-3);
+  });
+}
+
+/* ══ STATE ════════════════════════════════════════════════ */
+let selectedDay='all', currentView='dash';
+
+/* ══ VIEW ════════════════════════════════════════════════ */
+function setView(v){
+  currentView=v;
+  ['exec','dash','fuel'].forEach(id=>{
+    const cap=id.charAt(0).toUpperCase()+id.slice(1);
+    document.getElementById('view'+cap).style.display=id===v?'block':'none';
+    document.getElementById('nav'+cap).classList.toggle('active',id===v);
+  });
+  document.getElementById('calBar').style.display=v==='exec'?'none':'flex';
+  document.getElementById('noticeBar').style.display=v==='exec'?'none':'flex';
+  if(v==='exec') renderExec();
+}
+
+/* ══ CALENDAR ════════════════════════════════════════════ */
+function buildCalendar(){
+  const DOW=['อา','จ','อ','พ','พฤ','ศ','ส'];
+  let html=DOW.map((d,i)=>`<div class="cal-dow${i===0||i===6?' sat':''}">${d}</div>`).join('');
+  for(let i=0;i<3;i++)html+=`<div class="cal-day"></div>`;
+  for(let day=1;day<=31;day++){
+    const idx=day-1, hasData=idx<DATA_DAYS;
+    const tip=hasData?`${DAILY[idx].label} · รวม ${fmtN(dayTotal(DAILY[idx]))} ลบ.ม.`:`${day} ก.ค. · ยังไม่มีข้อมูล`;
+    if(hasData)html+=`<div class="cal-day has-data" data-idx="${idx}" onclick="selectDate(${idx})" title="${tip}">${day}</div>`;
+    else html+=`<div class="cal-day" title="${tip}">${day}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML=html;
+}
+
+function selectDate(idx){
+  selectedDay=idx;
+  document.querySelectorAll('.cal-day.has-data').forEach(el=>el.classList.remove('active'));
+  document.getElementById('calAllBtn').classList.remove('active');
+  if(idx==='all'){document.getElementById('calAllBtn').classList.add('active');}
+  else{const el=document.querySelector(`.cal-day[data-idx="${idx}"]`);if(el)el.classList.add('active');}
+  updateAll();
+}
+
+/* ══ NOTICE ══════════════════════════════════════════════ */
+function updateNotice(){
+  const el=document.getElementById('noticeText');
+  el.textContent=selectedDay==='all'?`แสดงคิวรวมสะสม 1–${DATA_DAYS} กรกฎาคม 2569 (มีข้อมูล ${DATA_DAYS} วัน จาก 31 วัน)`:`แสดงคิววันที่ ${DAILY[selectedDay].label} 2569`;
+}
+
+/* ══ DASHBOARD KPI ═══════════════════════════════════════ */
+function updateDashKPI(data){
+  const total=dayTotal(data);
+  const locCodes=Object.keys(LOCATIONS);
+  const cards=[
+    {label:'คิวรวมทั้งหมด',sub:'ทุกสถานที่',val:fmtN(total),unit:'ลบ.ม.',accent:'#f0a500',pct:''},
+    ...locCodes.map(code=>{const v=locTotal(data,code);return{label:'คอนกรีต',sub:LOCATIONS[code].label,val:fmtN(v),unit:'ลบ.ม.',accent:LOCATIONS[code].color,pct:total>0?((v/total)*100).toFixed(1)+'% ของวัน':''};})
+  ];
+  document.getElementById('dashKpiRow').innerHTML=cards.map(c=>`<div class="kpi-card" style="border-top-color:${c.accent}"><div class="kpi-label">${c.label}</div><div class="kpi-sub">${c.sub}</div><div class="kpi-val">${c.val}<span class="kpi-unit">${c.unit}</span></div>${c.pct?`<div class="kpi-pct">${c.pct}</div>`:''}</div>`).join('');
+}
+
+/* ══ CHARTS ══════════════════════════════════════════════ */
+function updateBarChart(data){
+  const items=PRODUCTS.map(p=>({label:p.label,loc:p.loc,val:+(data[p.key]||0).toFixed(2)})).filter(x=>x.val>0);
+  document.getElementById('barTitle').textContent=selectedDay==='all'?'📊 คิวแยกตามประเภทสินค้า (รวมสะสม)':'📊 คิวแยกตามประเภทสินค้า · '+DAILY[selectedDay].label;
+  drawBar('barChart',items.map(x=>x.label),items.map(x=>x.val),items.map(x=>LOCATIONS[x.loc].color+'cc'));
+}
+
+function updateDonutChart(data){
+  const codes=Object.keys(LOCATIONS);
+  drawDonut('donutChart',codes.map(c=>LOCATIONS[c].label),codes.map(c=>+locTotal(data,c).toFixed(2)),codes.map(c=>LOCATIONS[c].color));
+}
+
+function buildTrendChart(){
+  const labels=DAILY.slice(0,DATA_DAYS).map(d=>d.label);
+  const datasets=Object.entries(LOCATIONS).map(([code,loc])=>({label:loc.label,data:DAILY.slice(0,DATA_DAYS).map(d=>+locTotal(d,code).toFixed(2)),color:loc.color}));
+  drawStackedBar('trendChart',labels,datasets,200);
+}
+
+/* ══ DETAIL TABLE ════════════════════════════════════════ */
+function updateDetailTable(data){
+  const cum=cumulative(), mTotal=monthGrandTotal(), isAll=selectedDay==='all';
+  document.getElementById('tblTitle').textContent=isAll?'📋 รายละเอียดคิวแยกตามสินค้า (รวมสะสม)':'📋 รายละเอียดคิวแยกตามสินค้า · '+DAILY[selectedDay].label;
+  document.getElementById('colDay').textContent=isAll?'คิวสะสม (ลบ.ม.)':'คิววันที่เลือก (ลบ.ม.)';
+  document.getElementById('footDay').textContent=fmtN(dayTotal(data));
+  document.getElementById('footTotal').textContent=fmtN(mTotal);
+  document.getElementById('tblBody').innerHTML=PRODUCTS.map(p=>{
+    const dv=data[p.key]||0, cv=cum[p.key]||0;
+    const pct=mTotal>0?((cv/mTotal)*100).toFixed(1)+'%':'—';
+    const lc='loc-'+p.loc;
+    return `<tr><td>${p.label}<span class="loc-tag ${lc}">${LOCATIONS[p.loc].label}</span></td><td><span class="loc-tag ${lc}">${LOCATIONS[p.loc].label}</span></td><td class="${dv>0?'num':'zero'}">${dv>0?fmtN(dv):'—'}</td><td class="${cv>0?'num':'zero'}">${cv>0?fmtN(cv):'—'}</td><td class="${cv>0?'num':'zero'}">${pct}</td></tr>`;
+  }).join('');
+}
+
+/* ══ FUEL ════════════════════════════════════════════════ */
+function updateFuelKPI(){
+  const bh=FUEL_DAILY.reduce((s,r)=>s+(r.backhoe||0),0);
+  const pt=FUEL_DAILY.reduce((s,r)=>s+(r.loaderPT||0),0);
+  const nw=FUEL_DAILY.reduce((s,r)=>s+(r.loaderNW||0),0);
+  const tot=bh+pt+nw;
+  document.getElementById('fuelKpiRow').innerHTML=[
+    {label:'น้ำมันรวมทั้งหมด',sub:'ทุกรายการ',val:fmtI(tot),unit:'ลิตร',accent:'#ef4444'},
+    {label:'รถแบคโฮ JCB',sub:'พัทยา',val:fmtI(bh),unit:'ลิตร',accent:'#f59e0b'},
+    {label:'รถตัก',sub:'พัทยา',val:fmtI(pt),unit:'ลิตร',accent:'#3b82f6'},
+    {label:'รถตัก',sub:'นาวัง',val:fmtI(nw),unit:'ลิตร',accent:'#22c55e'},
+  ].map(c=>`<div class="kpi-card" style="border-top-color:${c.accent}"><div class="kpi-label">${c.label}</div><div class="kpi-sub">${c.sub}</div><div class="kpi-val">${c.val}<span class="kpi-unit">${c.unit}</span></div></div>`).join('');
+}
+
+function buildFuelChart(){
+  const rows=FUEL_DAILY.filter((r,i)=>i<16);
+  drawStackedBar('fuelChart',rows.map(r=>r.label),[
+    {label:'รถแบคโฮ JCB (พัทยา)',data:rows.map(r=>r.backhoe||0),color:'#f59e0b'},
+    {label:'รถตัก (พัทยา)',        data:rows.map(r=>r.loaderPT||0),color:'#3b82f6'},
+    {label:'รถตัก (นาวัง)',         data:rows.map(r=>r.loaderNW||0),color:'#22c55e'},
+  ],200);
+}
+
+function updateFuelTable(){
+  const tbody=document.getElementById('fuelTblBody');
+  let bh=0,pt=0,nw=0;
+  tbody.innerHTML=FUEL_DAILY.filter((r,i)=>i<16).map(r=>{
+    const tot=(r.backhoe||0)+(r.loaderPT||0)+(r.loaderNW||0);
+    bh+=r.backhoe||0; pt+=r.loaderPT||0; nw+=r.loaderNW||0;
+    return`<tr><td>${r.label}</td><td class="${r.backhoe>0?'num':'zero'}">${r.backhoe>0?r.backhoe:'—'}</td><td class="${r.loaderPT>0?'num':'zero'}">${r.loaderPT>0?r.loaderPT:'—'}</td><td class="${r.loaderNW>0?'num':'zero'}">${r.loaderNW>0?r.loaderNW:'—'}</td><td class="${tot>0?'num':'zero'}">${tot>0?tot:'—'}</td></tr>`;
+  }).join('');
+  document.getElementById('fuelFootBH').textContent=bh;
+  document.getElementById('fuelFootPT').textContent=pt;
+  document.getElementById('fuelFootNW').textContent=nw;
+  document.getElementById('fuelFootTot').textContent=(bh+pt+nw).toLocaleString('th-TH');
+}
+
+/* ══ EXECUTIVE SUMMARY ═══════════════════════════════════ */
+function renderExec(){
+  const cum=cumulative(), mTotal=monthGrandTotal();
+  const locCodes=Object.keys(LOCATIONS);
+
+  // KPI
+  const allTots=DAILY.slice(0,DATA_DAYS).map(d=>dayTotal(d));
+  const maxIdx=allTots.indexOf(Math.max(...allTots));
+  const avgDay=mTotal/DATA_DAYS;
+  document.getElementById('execKpiRow').innerHTML=[
+    {label:'คิวรวมสะสม',sub:`1–${DATA_DAYS} ก.ค. 2569`,val:fmtN(mTotal),unit:'ลบ.ม.',accent:'#f0a500'},
+    {label:'ค่าเฉลี่ยต่อวัน',sub:`จาก ${DATA_DAYS} วัน`,val:fmtN(avgDay),unit:'ลบ.ม./วัน',accent:'#3b82f6'},
+    {label:'วันผลิตสูงสุด',sub:DAILY[maxIdx].label,val:fmtN(Math.max(...allTots)),unit:'ลบ.ม.',accent:'#27ae60'},
+    {label:'ข้อมูลครบ',sub:'จาก 31 วันของเดือน',val:DATA_DAYS,unit:'/ 31 วัน',accent:'#8e44ad'},
+  ].map(c=>`<div class="kpi-card" style="border-top-color:${c.accent}"><div class="kpi-label">${c.label}</div><div class="kpi-sub">${c.sub}</div><div class="kpi-val">${c.val}<span class="kpi-unit">${c.unit}</span></div></div>`).join('');
+
+  // Location table
+  const locRows=locCodes.map(code=>{
+    const v=locTotal(cum,code);
+    const pctV=mTotal>0?((v/mTotal)*100).toFixed(1):0;
+    const topProd=PRODUCTS.filter(p=>p.loc===code).map(p=>({label:p.label,val:cum[p.key]||0})).sort((a,b)=>b.val-a.val)[0];
+    return{code,label:LOCATIONS[code].label,color:LOCATIONS[code].color,v,pctV,topProd};
+  }).sort((a,b)=>b.v-a.v);
+  document.getElementById('execLocTable').innerHTML=locRows.map(r=>`<div class="exec-loc-row"><div style="width:10px;height:10px;border-radius:50%;background:${r.color};flex-shrink:0"></div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#2c3e50">${r.label}</div><div style="font-size:10px;color:#8a96b0">สินค้าหลัก: ${r.topProd?r.topProd.label:'—'}</div><div class="exec-bar" style="background:${r.color};width:${r.pctV}%;opacity:.4"></div></div><div style="text-align:right"><div style="font-size:13px;font-weight:700;color:#1a3a6b">${fmtN(r.v)}</div><div style="font-size:11px;color:#8a96b0">${r.pctV}%</div></div></div>`).join('');
+
+  // Exec pie
+  const pieVals=locRows.filter(r=>r.v>0);
+  drawDonut('execPieChart',pieVals.map(r=>r.label),pieVals.map(r=>+r.v.toFixed(2)),pieVals.map(r=>r.color));
+
+  // Top 10 products
+  const topProds=PRODUCTS.map(p=>({label:p.label,loc:p.loc,color:LOCATIONS[p.loc].color,val:cum[p.key]||0})).filter(x=>x.val>0).sort((a,b)=>b.val-a.val).slice(0,10);
+  const maxProd=topProds[0]?.val||1;
+  document.getElementById('execTopProds').innerHTML=topProds.map((p,i)=>`<div class="prod-row"><div class="prod-rank">${i+1}</div><div style="flex:1"><div style="font-size:12px;font-weight:600">${p.label} <span class="loc-tag loc-${p.loc}">${LOCATIONS[p.loc].label}</span></div><div style="height:5px;border-radius:3px;margin-top:4px;background:${p.color};width:${((p.val/maxProd)*100).toFixed(0)}%;opacity:.7"></div></div><div style="text-align:right"><div style="font-size:12px;font-weight:700;color:#1a3a6b">${fmtN(p.val)}</div><div style="font-size:10px;color:#8a96b0">${mTotal>0?((p.val/mTotal)*100).toFixed(1):0}%</div></div></div>`).join('');
+
+  // Split
+  const rmKeys=['P1','P2','ผสมเสร็จ'];
+  const rm=rmKeys.reduce((s,k)=>s+(cum[k]||0),0), pc=mTotal-rm;
+  document.getElementById('execSplit').innerHTML=[{lbl:'ผสมเสร็จ (พัทยา)',sub:'P1+P2',val:rm,color:'#3b82f6'},{lbl:'ผลิตภัณฑ์คอนกรีต',sub:'นาวัง/หนองปรือ/ปทุมธานี',val:pc,color:'#22c55e'}].map(r=>`<div class="split-row"><div><div style="font-size:12px;font-weight:600;color:${r.color}">${r.lbl}</div><div style="font-size:10px;color:#8a96b0">${r.sub}</div></div><div><div style="font-size:13px;font-weight:700;color:#1a3a6b">${fmtN(r.val)}</div><div style="font-size:10px;color:#8a96b0;text-align:right">${mTotal>0?((r.val/mTotal)*100).toFixed(1):0}%</div></div></div>`).join('');
+
+  // Pile
+  const pileNP=cum['เสาเข็ม_นป']||0, pilePT=cum['เสาเข็ม_ปท']||0;
+  document.getElementById('execPile').innerHTML=[{lbl:'หนองปรือ',val:pileNP,color:'#ef4444'},{lbl:'ปทุมธานี',val:pilePT,color:'#a855f7'},{lbl:'รวม',val:pileNP+pilePT,color:'#1a3a6b',bold:true}].map(r=>`<div class="split-row"><div style="font-size:12px;font-weight:${r.bold?700:600};color:${r.color}">${r.lbl}</div><div style="font-size:13px;font-weight:700;color:${r.color}">${fmtN(r.val)} ลบ.ม.</div></div>`).join('');
+
+  // Floor
+  const ppNW=cum['แผ่นพื้น_นว']||0, ppPT=cum['แผ่นพื้น_ปท']||0;
+  document.getElementById('execFloor').innerHTML=[{lbl:'นาวัง',val:ppNW,color:'#22c55e'},{lbl:'ปทุมธานี',val:ppPT,color:'#a855f7'},{lbl:'รวม',val:ppNW+ppPT,color:'#1a3a6b',bold:true}].map(r=>`<div class="split-row"><div style="font-size:12px;font-weight:${r.bold?700:600};color:${r.color}">${r.lbl}</div><div style="font-size:13px;font-weight:700;color:${r.color}">${fmtN(r.val)} ลบ.ม.</div></div>`).join('');
+
+  // Exec trend
+  const tLabels=DAILY.slice(0,DATA_DAYS).map(d=>d.label);
+  drawStackedBar('execTrendChart',tLabels,Object.entries(LOCATIONS).map(([code,loc])=>({label:loc.label,data:DAILY.slice(0,DATA_DAYS).map(d=>+locTotal(d,code).toFixed(2)),color:loc.color})),200);
+
+  // Fuel summary
+  const fBH=FUEL_DAILY.reduce((s,r)=>s+(r.backhoe||0),0);
+  const fPT=FUEL_DAILY.reduce((s,r)=>s+(r.loaderPT||0),0);
+  const fNW=FUEL_DAILY.reduce((s,r)=>s+(r.loaderNW||0),0);
+  document.getElementById('execFuelSummary').innerHTML=[{lbl:'รถแบคโฮ JCB (พัทยา)',val:fBH,rate:'0.69',good:true},{lbl:'รถตัก (พัทยา)',val:fPT,rate:'0.71',good:true},{lbl:'รถตัก (นาวัง)',val:fNW,rate:'0.36',good:true}].map(r=>`<div class="fuel-rate"><div><div style="font-size:12px;font-weight:600;color:#2c3e50">${r.lbl}</div><div style="font-size:10px;color:#8a96b0">${r.val.toLocaleString('th-TH')} ลิตร</div></div><div style="font-size:14px;font-weight:700;color:${r.good?'#27ae60':'#ef4444'}">${r.rate} ล./คิว</div></div>`).join('')+`<div style="padding:8px 0;border-top:2px solid #f0a500;margin-top:4px;display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:12px;font-weight:700;color:#1a3a6b">รวมน้ำมันทั้งหมด</div><div style="font-size:16px;font-weight:800;color:#1a3a6b">${(fBH+fPT+fNW).toLocaleString('th-TH')} ลิตร</div></div>`;
+
+  // Observations
+  const p2Days=DAILY.slice(0,DATA_DAYS).filter(d=>(d['P2']||0)>0).length;
+  const topProdAll=topProds[0];
+  document.getElementById('execObs').innerHTML=[
+    {icon:'✅',text:`คิวรวมสะสม <strong>${fmtN(mTotal)} ลบ.ม.</strong> ใน ${DATA_DAYS} วัน ค่าเฉลี่ย ${fmtN(avgDay)} ลบ.ม./วัน`},
+    {icon:'🏆',text:`สินค้าสูงสุด: <strong>${topProdAll?.label||'—'} (${topProdAll?LOCATIONS[topProdAll.loc].label:'—'})</strong> ${fmtN(topProdAll?.val||0)} ลบ.ม.`},
+    {icon:'📅',text:`วันผลิตสูงสุด: <strong>${DAILY[maxIdx].label}</strong> รวม ${fmtN(Math.max(...allTots))} ลบ.ม.`},
+    {icon:'🏭',text:`นาวัง ผลิตสูงสุด ${fmtN(locTotal(cum,'nawg'))} ลบ.ม. (${mTotal>0?((locTotal(cum,'nawg')/mTotal)*100).toFixed(1):0}% ของเดือน)`},
+    {icon:p2Days<=2?'⚠️':'✅',text:`P2 (พัทยา) ผลิต <strong>${p2Days} วัน</strong> จาก ${DATA_DAYS} วัน รวม ${fmtN(cum['P2']||0)} ลบ.ม.`},
+    {icon:'⛽',text:`น้ำมันรวม ${(fBH+fPT+fNW).toLocaleString('th-TH')} ลิตร — รถตักนาวัง ประหยัดสุด <strong>0.39 ล./คิว</strong>`},
+    {icon:'📊',text:`รอข้อมูลอีก <strong>${31-DATA_DAYS} วัน</strong> (${DATA_DAYS+1}–31 ก.ค.)`},
+  ].map(o=>`<div class="obs-item"><span style="font-size:16px;flex-shrink:0;line-height:1.4">${o.icon}</span><span>${o.text}</span></div>`).join('');
+}
+
+/* ══ UPDATE ALL ══════════════════════════════════════════ */
+function getDisplayData(){return selectedDay==='all'?cumulative():(DAILY[selectedDay]||{});}
+
+function updateAll(){
+  const data=getDisplayData();
+  updateNotice();
+  updateDashKPI(data);
+  updateBarChart(data);
+  updateDonutChart(data);
+  updateDetailTable(data);
+}
+
+/* ══ RESIZE HANDLER ══════════════════════════════════════ */
+let rsTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(rsTimer);
+  rsTimer=setTimeout(()=>{
+    if(currentView==='dash'){updateBarChart(getDisplayData());updateDonutChart(getDisplayData());buildTrendChart();}
+    if(currentView==='fuel') buildFuelChart();
+    if(currentView==='exec') renderExec();
+  },120);
+});
+
+/* ══ INIT ════════════════════════════════════════════════ */
+function init(){
+  buildCalendar();
+  updateFuelKPI();
+  updateFuelTable();
+  // Double rAF ensures DOM is fully laid out before reading clientWidth
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      buildFuelChart();
+      buildTrendChart();
+      updateAll();
+      setView('exec');
+    });
+  });
+}
+window.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
