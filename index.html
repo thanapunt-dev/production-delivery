@@ -99,6 +99,7 @@ body{font-family:'Sarabun',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size
     <button onclick="setMonth('3',this)">เม.ย.</button>
     <button onclick="setMonth('4',this)">พ.ค.</button>
     <button onclick="setMonth('5',this)">มิ.ย.</button>
+    <button onclick="setMonth('6',this)">ก.ค.</button>
     <input type="hidden" id="ms" value="a">
   </div>
 
@@ -343,15 +344,15 @@ body{font-family:'Sarabun',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size
     </div>
     <div class="card">
       <div class="ct" id="ca2-ct">📦 Net Stock สะสม YTD รายสินค้า</div>
-      <div class="cs" id="ca2-cs">คิวผลิตรวม − คิวส่งรวม 6 เดือน | 🟠 สต็อกค้าง 🟢 ดึงสต็อกออก</div>
+      <div class="cs" id="ca2-cs">คิวผลิตรวม − คิวส่งรวม YTD | 🟠 สต็อกค้าง 🟢 ดึงสต็อกออก</div>
       <div class="cw" style="height:210px"><canvas id="ca2"></canvas></div>
     </div>
   </div>
 
   <!-- 4. Forecast ก.ค. -->
   <div class="card g1" style="margin-bottom:14px">
-    <div class="ct">🔮 Forecast ก.ค. 2569 — คาดการณ์คิวส่งรายสินค้า</div>
-    <div class="cs">อิงจาก Linear Trend 3 เดือนล่าสุด (เม.ย.–มิ.ย.) เปรียบเทียบกับ มิ.ย. จริง</div>
+    <div class="ct">🔮 Forecast เดือนถัดไป — คาดการณ์คิวส่งรายสินค้า</div>
+    <div class="cs">อิงจาก Linear Trend 3 เดือนล่าสุด เปรียบเทียบกับเดือนล่าสุดจริง</div>
     <div class="lg" id="fc-legend"></div>
     <div class="cw" style="height:200px"><canvas id="ca3"></canvas></div>
     <div class="analysis-note" id="fc-note"></div>
@@ -360,7 +361,7 @@ body{font-family:'Sarabun',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size
   <!-- ════ Capacity Utilization ════ -->
   <div class="sec-title" style="margin-top:28px">⚙️ Capacity Utilization — กำลังผลิตที่ใช้จริง</div>
   <div class="card g1" style="margin-bottom:14px">
-    <div class="ct" id="cu-title">กำลังผลิตที่ใช้จริง — เฉลี่ย 6 เดือน (ม.ค.–มิ.ย. 2569)</div>
+    <div class="ct" id="cu-title">กำลังผลิตที่ใช้จริง — เฉลี่ย YTD</div>
     <div class="cs">คิวผลิตจริง ÷ กำลังผลิตเต็มที่ (คิว/เดือน) × 100% | อิงจากตารางกำลังการผลิตเต็มที่ปี 2569</div>
     <div class="lg" id="cu-legend" style="justify-content:flex-start;flex-wrap:wrap"></div>
     <div class="cw" style="height:290px;margin-top:6px"><canvas id="ca4"></canvas></div>
@@ -374,18 +375,18 @@ body{font-family:'Sarabun',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size
 </div>
 
 <script>
-const MO=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.'];
+const MO=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.'];
 const D={
-  pp:{p:[1133.7,1050.63,1215.77,916.6,1263.6,1279.10],s:[1251.35,1009.67,1278.46,1275.33,1254.46,1362.19]},
-  pn:{p:[464.5,528.61,539.79,372.8,538.4,547.20],s:[305.54,628.72,464.89,337.9,590.63,509.31]},
-  bh:{p:[379.74,437.81,556.83,300.71,474.26,297.32],s:[365.72,326.26,513.43,399.49,533.24,336.51]},
-  th:{p:[2564.9,2761.4,2083.05,1801.25,2208.95,2178.06],s:[2454.93,1693.46,2994.65,2802.35,1900.37,1807.71]},
-  bx:{p:[2026.7,2237.2,2716.26,1421.76,2536.13,2334.10],s:[2237.42,2327.4,2654.24,1648.7,3243.2,1184.49]},
-  kh:{p:[12.45,17.2,45.3,30.1,70.8,83.15],s:[0,0,0,0,0,109.94]},
-  rr:{p:[1.4,0,1.6,9.88,43.2,105.47],s:[0,0,0,0,0,0.74]},
-  sk:{p:[851,607.5,897,727,842.5,770],s:[797.754,779.989,898.351,640.027,640.911,1040.817]},
-  ppt:{p:[270.19,145.51,207.59,202.65,233.52,219.64],s:[236.30,225.72,272.17,248.33,218.93,231.05]},
-  skt:{p:[54.06,206.12,452.74,386.77,298.00,211.14],s:[165.86,225.48,271.59,329.10,464.53,266.61]},
+  pp:{p:[1133.7,1050.63,1215.77,916.6,1263.6,1279.10,780.10],s:[1251.35,1009.67,1278.46,1275.33,1254.46,1362.19,775.51]},
+  pn:{p:[464.5,528.61,539.79,372.8,538.4,547.20,428.30],s:[305.54,628.72,464.89,337.9,590.63,509.31,330.55]},
+  bh:{p:[379.74,437.81,556.83,300.71,474.26,297.32,247.25],s:[365.72,326.26,513.43,399.49,533.24,336.51,235.94]},
+  th:{p:[2564.9,2761.4,2083.05,1801.25,2208.95,2178.06,676.90],s:[2454.93,1693.46,2994.65,2802.35,1900.37,1807.71,1377.84]},
+  bx:{p:[2026.7,2237.2,2716.26,1421.76,2536.13,2334.10,888.00],s:[2237.42,2327.4,2654.24,1648.7,3243.2,1184.49,1085.83]},
+  kh:{p:[12.45,17.2,45.3,30.1,70.8,83.15,83.25],s:[0,0,0,0,0,109.94,9.15]},
+  rr:{p:[1.4,0,1.6,9.88,43.2,105.47,9.30],s:[0,0,0,0,0,0.74,0.00]},
+  sk:{p:[851,607.5,897,727,842.5,770,300],s:[797.754,779.989,898.351,640.027,640.911,1040.817,349.608]},
+  ppt:{p:[270.19,145.51,207.59,202.65,233.52,219.64,238.16],s:[236.30,225.72,272.17,248.33,218.93,231.05,188.74]},
+  skt:{p:[54.06,206.12,452.74,386.77,298.00,211.14,41.69],s:[165.86,225.48,271.59,329.10,464.53,266.61,131.514]},
 };
 
 const PNAMES=['แผ่นพื้น(นาวัง)','ผนังรั้ว/เสารั้ว','บ่อพัก','ท่อกลม','บ๊อกซ์คัลเวิร์ท','ขอบคันหิน','รางระบายน้ำ','เสาเข็ม(หนองปรือ)','แผ่นพื้น(ปทุมธานี)','เสาเข็ม(ปทุมธานี)'];
@@ -438,18 +439,19 @@ function genInsights(mi){
     const totP=PKEYS.map(k=>sum(D[k].p)), totS=PKEYS.map(k=>sum(D[k].s));
     const topVolIdx=[0,1,2,3,4,5,6].reduce((a,b)=>totS[a]>totS[b]?a:b);
     cards.push(iCard('#3b82f6','🏆',`${PNAMES[topVolIdx]} = สินค้าหลักสำคัญที่สุด (นาวัง)`,
-      `รวม 6 เดือน ผลิต ${fmt(totP[topVolIdx])} คิว ส่ง ${fmt(totS[topVolIdx])} คิว (Delivery Rate ${(totS[topVolIdx]/totP[topVolIdx]*100).toFixed(0)}%) สัดส่วนสูงสุดในทุกสินค้า`));
+      `รวม ${MO.length} เดือน ผลิต ${fmt(totP[topVolIdx])} คิว ส่ง ${fmt(totS[topVolIdx])} คิว (Delivery Rate ${(totS[topVolIdx]/totP[topVolIdx]*100).toFixed(0)}%) สัดส่วนสูงสุดในทุกสินค้า`));
     const bxRates=D.bx.p.map((p,i)=>p>0?D.bx.s[i]/p*100:null);
     const minBxRate=Math.min(...bxRates.filter(r=>r!==null)), minBxIdx=bxRates.indexOf(minBxRate);
     if(minBxRate<70) cards.push(iCard('#ef4444','🚨',`บ๊อกซ์คัลเวิร์ท — ส่งต่ำสุด ${MO[minBxIdx]} (${minBxRate.toFixed(0)}%)`,
       `${MO[minBxIdx]} ผลิต ${fmt(D.bx.p[minBxIdx])} คิว แต่ส่งเพียง ${fmt(D.bx.s[minBxIdx])} คิว ควรตรวจสอบออเดอร์ลูกค้าและโลจิสติกส์`));
-    const skJunRate=D.sk.p[5]>0?D.sk.s[5]/D.sk.p[5]*100:0, skTotRate=sum(D.sk.s)/sum(D.sk.p)*100;
-    cards.push(iCard('#f97316','🏗️',`เสาเข็มหนองปรือ มิ.ย. — ส่งเกินผลิต ${skJunRate.toFixed(0)}%`,
-      `มิ.ย. ผลิต ${fmt(D.sk.p[5])} คิว แต่ส่งถึง ${fmt(D.sk.s[5])} คิว — ดึงสต็อก ${fmt(D.sk.s[5]-D.sk.p[5])} คิว รวม 6 เดือน Delivery Rate ${skTotRate.toFixed(0)}%`));
+    const skLi=D.sk.p.length-1;
+    const skLastRate=D.sk.p[skLi]>0?D.sk.s[skLi]/D.sk.p[skLi]*100:0, skTotRate=sum(D.sk.s)/sum(D.sk.p)*100;
+    cards.push(iCard('#f97316','🏗️',`เสาเข็มหนองปรือ ${MO[skLi]} — DR ${skLastRate.toFixed(0)}%`,
+      `${MO[skLi]} ผลิต ${fmt(D.sk.p[skLi])} คิว ส่ง ${fmt(D.sk.s[skLi])} คิว${skLastRate>100?' — ดึงสต็อก '+fmt(D.sk.s[skLi]-D.sk.p[skLi])+' คิว':''} | รวมทุกเดือน DR ${skTotRate.toFixed(0)}%`));
     cards.push(iCard('#f59e0b','⚠️','ขอบคันหิน — ผลิตสะสมแต่เริ่มส่งช้า',
       `ผลิตสะสม ${fmt(totP[5])} คิว ส่งรวม ${fmt(totS[5],2)} คิว (Delivery Rate ${(totS[5]/totP[5]*100).toFixed(0)}%) เริ่มส่งครั้งแรก มิ.ย. ควรวางแผนระบายสต็อกค้าง`));
     cards.push(iCard('#f59e0b','🆕','รางระบายน้ำ — สินค้าใหม่ ดีมานด์ยังไม่ชัด',
-      `เริ่มผลิต เม.ย. เพิ่มถึง ${fmt(D.rr.p[5])} คิวใน มิ.ย. แต่ส่งรวมเพียง ${fmt(sum(D.rr.s),2)} คิว ควรติดตามดีมานด์ตลาด`));
+      `เริ่มผลิต เม.ย. — ${MO[D.rr.p.length-1]} ผลิต ${fmt(D.rr.p[D.rr.p.length-1])} คิว | ส่งรวมสะสม ${fmt(sum(D.rr.s),2)} คิว ควรติดตามดีมานด์ตลาด`));
     const pptTotP=sum(D.ppt.p),pptTotS=sum(D.ppt.s),pptRate=pptTotP>0?pptTotS/pptTotP*100:0;
     const sktTotP=sum(D.skt.p),sktTotS=sum(D.skt.s),sktRate=sktTotP>0?sktTotS/sktTotP*100:0;
     cards.push(iCard('#5b21b6','🏭','ปทุมธานี — สรุปYTD แผ่นพื้น + เสาเข็ม',
@@ -590,7 +592,7 @@ function renderCapacity(mi){
   // Update CU title
   const cuTitleEl=document.getElementById('cu-title');
   if(cuTitleEl) cuTitleEl.textContent=isAll
-    ?'กำลังผลิตที่ใช้จริง — เฉลี่ย 6 เดือน (ม.ค.–มิ.ย. 2569)'
+    ?`กำลังผลิตที่ใช้จริง — เฉลี่ย ${MO.length} เดือน (${MO[0]}–${MO[MO.length-1]} 2569)`
     :`กำลังผลิตที่ใช้จริง — ${MO[parseInt(mi)]} 2569`;
 
   // Update CU legend colors
@@ -683,7 +685,7 @@ function renderAnalysis(mi){
   const ca2cs=document.getElementById('ca2-cs');
   if(ca2ct) ca2ct.textContent=isAll?'📦 Net Stock สะสม YTD รายสินค้า':`📦 Net Stock ${MO[selIdx]} รายสินค้า`;
   if(ca2cs) ca2cs.textContent=isAll
-    ?'คิวผลิตรวม − คิวส่งรวม 6 เดือน | 🟠 สต็อกค้าง 🟢 ดึงสต็อกออก'
+    ?`คิวผลิตรวม − คิวส่งรวม ${MO.length} เดือน | 🟠 สต็อกค้าง 🟢 ดึงสต็อกออก`
     :`คิวผลิต − คิวส่ง เดือน${MO[selIdx]} | 🟠 สต็อกค้าง 🟢 ส่งเกินผลิต`;
   mk('ca2','bar',{labels:SHORT_N,datasets:[{
     label:'Net Stock (คิว)',data:netStk,
@@ -714,22 +716,24 @@ function renderAnalysis(mi){
     const b=num/den;
     return Math.max(0,+(ym+b).toFixed(0));
   }
-  const junAct=PKEYS.map(k=>D[k].s[5]);
+  const lastIdx=MO.length-1;
+  const nextMoName=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][MO.length]||'เดือนหน้า';
+  const junAct=PKEYS.map(k=>D[k].s[lastIdx]);
   const julFc=PKEYS.map(k=>linFc(D[k].s));
   const fcColors=julFc.map((v,i)=>v>junAct[i]?'#fb923c':'#10b981');
   // legend
   document.getElementById('fc-legend').innerHTML=
     `<span><span class="dot" style="background:#3b82f6"></span>มิ.ย. จริง</span>
-     <span><span class="dot" style="background:#fb923c"></span>ก.ค. Forecast (สูงกว่า)</span>
-     <span><span class="dot" style="background:#10b981"></span>ก.ค. Forecast (ต่ำกว่า)</span>`;
+     <span><span class="dot" style="background:#fb923c"></span>${nextMoName} Forecast (สูงกว่า)</span>
+     <span><span class="dot" style="background:#10b981"></span>${nextMoName} Forecast (ต่ำกว่า)</span>`;
   // note on biggest changes
   const changes=julFc.map((v,i)=>({name:SHORT_N[i],diff:v-junAct[i],pct:junAct[i]>0?(v-junAct[i])/junAct[i]*100:0}));
   const top=changes.reduce((a,b)=>Math.abs(a.diff)>Math.abs(b.diff)?a:b);
   document.getElementById('fc-note').textContent=
-    `* การคาดการณ์อิงจาก Linear Trend เม.ย.–มิ.ย. | สินค้าที่เปลี่ยนแปลงมากที่สุด: ${top.name} (${top.diff>=0?'+':''}${top.diff.toLocaleString('th-TH')} คิว, ${top.pct>=0?'+':''}${top.pct.toFixed(0)}%)`;
+    `* Forecast อิง Linear Trend 3 เดือนล่าสุด → ${nextMoName} | สินค้าที่เปลี่ยนแปลงมากที่สุด: ${top.name} (${top.diff>=0?'+':''}${top.diff.toLocaleString('th-TH')} คิว, ${top.pct>=0?'+':''}${top.pct.toFixed(0)}%)`;
   mk('ca3','bar',{labels:SHORT_N,datasets:[
-    {label:'มิ.ย. จริง',data:junAct,backgroundColor:'#3b82f6',borderRadius:4},
-    {label:'ก.ค. Forecast',data:julFc,backgroundColor:fcColors,borderRadius:4,
+    {label:`${MO[lastIdx]} จริง`,data:junAct,backgroundColor:'#3b82f6',borderRadius:4},
+    {label:`${nextMoName} Forecast`,data:julFc,backgroundColor:fcColors,borderRadius:4,
      borderWidth:1.5,borderColor:fcColors.map(c=>c),borderSkipped:false}
   ]},{
     scales:{
