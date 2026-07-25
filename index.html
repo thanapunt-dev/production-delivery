@@ -33,6 +33,13 @@ body{font-family:'Sarabun',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size
 #charts-grid.monthly{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 #charts-grid.monthly .prod-pair{display:block;margin-bottom:0}
 #charts-grid.monthly .dr-card{display:none}
+.filter-bar button.incomplete{position:relative}
+.filter-bar button.incomplete::after{content:'';position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%;background:#f59e0b}
+.partial-banner{display:none;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 16px;margin-bottom:14px;font-size:12px;color:#92400e;gap:8px;align-items:flex-start}
+.partial-banner.show{display:flex}
+.partial-banner .pb-ic{font-size:15px;flex-shrink:0;margin-top:1px}
+.partial-banner b{font-weight:700}
+.partial-banner .pb-list{margin-top:3px;font-size:11.5px;color:#a16207}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .g1{margin-bottom:14px}
 .card{background:#fff;border-radius:10px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.08);border:1px solid #e4e6ea}
@@ -102,6 +109,8 @@ body{font-family:'Sarabun',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size
     <button onclick="setMonth('6',this)">ก.ค.</button>
     <input type="hidden" id="ms" value="a">
   </div>
+
+  <div class="partial-banner" id="partial-banner"></div>
 
   <div class="krow" id="krow"></div>
 
@@ -377,16 +386,26 @@ body{font-family:'Sarabun',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size
 <script>
 const MO=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.'];
 const D={
-  pp:{p:[1133.7,1050.63,1215.77,916.6,1263.6,1279.10,780.10],s:[1251.35,1009.67,1278.46,1275.33,1254.46,1362.19,775.51]},
-  pn:{p:[464.5,528.61,539.79,372.8,538.4,547.20,428.30],s:[305.54,628.72,464.89,337.9,590.63,509.31,330.55]},
-  bh:{p:[379.74,437.81,556.83,300.71,474.26,297.32,247.25],s:[365.72,326.26,513.43,399.49,533.24,336.51,235.94]},
-  th:{p:[2564.9,2761.4,2083.05,1801.25,2208.95,2178.06,676.90],s:[2454.93,1693.46,2994.65,2802.35,1900.37,1807.71,1377.84]},
-  bx:{p:[2026.7,2237.2,2716.26,1421.76,2536.13,2334.10,888.00],s:[2237.42,2327.4,2654.24,1648.7,3243.2,1184.49,1085.83]},
-  kh:{p:[12.45,17.2,45.3,30.1,70.8,83.15,83.25],s:[0,0,0,0,0,109.94,9.15]},
+  pp:{p:[1133.7,1050.63,1215.77,916.6,1263.6,1279.10,899.90],s:[1251.35,1009.67,1278.46,1275.33,1254.46,1362.19,930.60]},
+  pn:{p:[464.5,528.61,539.79,372.8,538.4,547.20,507.85],s:[305.54,628.72,464.89,337.9,590.63,509.31,392.86]},
+  bh:{p:[379.74,437.81,556.83,300.71,474.26,297.32,281.35],s:[365.72,326.26,513.43,399.49,533.24,336.51,255.05]},
+  th:{p:[2564.9,2761.4,2083.05,1801.25,2208.95,2178.06,882.50],s:[2454.93,1693.46,2994.65,2802.35,1900.37,1807.71,1519.54]},
+  bx:{p:[2026.7,2237.2,2716.26,1421.76,2536.13,2334.10,1021.95],s:[2237.42,2327.4,2654.24,1648.7,3243.2,1184.49,1213.54]},
+  kh:{p:[12.45,17.2,45.3,30.1,70.8,83.15,98.90],s:[0,0,0,0,0,109.94,14.12]},
   rr:{p:[1.4,0,1.6,9.88,43.2,105.47,9.30],s:[0,0,0,0,0,0.74,0.00]},
-  sk:{p:[851,607.5,897,727,842.5,770,300],s:[797.754,779.989,898.351,640.027,640.911,1040.817,349.608]},
+  sk:{p:[851,607.5,897,727,842.5,770,455.5],s:[797.754,779.989,898.351,640.027,640.911,1040.817,479.911]},
   ppt:{p:[270.19,145.51,207.59,202.65,233.52,219.64,238.16],s:[236.30,225.72,272.17,248.33,218.93,231.05,188.74]},
   skt:{p:[54.06,206.12,452.74,386.77,298.00,211.14,41.69],s:[165.86,225.48,271.59,329.10,464.53,266.61,131.514]},
+};
+
+// เดือนที่ข้อมูลยังไม่ครบทั้งเดือน (index ตรงกับ MO) — key = วันที่ล่าสุดที่มีข้อมูลจริงของแต่ละสาขา
+// เมื่อได้รับข้อมูลครบเดือนแล้ว ให้ลบ key นั้นออกจาก PARTIAL_MONTHS
+const PARTIAL_MONTHS={
+  6:{branches:[
+    {name:'นาวัง',lastDate:'22 ก.ค. 2569'},
+    {name:'หนองปรือ',lastDate:'24 ก.ค. 2569'},
+    {name:'ปทุมธานี',lastDate:'18 ก.ค. 2569'},
+  ]}
 };
 
 const PNAMES=['แผ่นพื้น(นาวัง)','ผนังรั้ว/เสารั้ว','บ่อพัก','ท่อกลม','บ๊อกซ์คัลเวิร์ท','ขอบคันหิน','รางระบายน้ำ','เสาเข็ม(หนองปรือ)','แผ่นพื้น(ปทุมธานี)','เสาเข็ม(ปทุมธานี)'];
@@ -427,6 +446,36 @@ function setMonth(v,btn){
   document.querySelectorAll('.filter-bar button').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   render();
+}
+
+/* ─── สถานะข้อมูลไม่ครบเดือน ─────────────────────────── */
+function markIncompleteButtons(){
+  document.querySelectorAll('.filter-bar button').forEach((b,idx)=>{
+    // idx 0 = ทั้งหมด, idx 1..N = เดือน 0..N-1
+    if(idx===0)return;
+    const mi=idx-1;
+    b.classList.toggle('incomplete', !!PARTIAL_MONTHS[mi]);
+    if(PARTIAL_MONTHS[mi]) b.title='ข้อมูลเดือนนี้ยังไม่ครบทั้งเดือน';
+  });
+}
+function renderPartialBanner(){
+  const mi=document.getElementById('ms').value;
+  const banner=document.getElementById('partial-banner');
+  const incompleteIdxs=Object.keys(PARTIAL_MONTHS).map(Number);
+  let show=false, html='';
+  if(mi==='a' && incompleteIdxs.length){
+    show=true;
+    const names=incompleteIdxs.map(i=>MO[i]).join(', ');
+    html=`<span class="pb-ic">⚠️</span><div><b>ข้อมูลบางเดือนยังไม่ครบทั้งเดือน:</b> ${names} — ตัวเลขรวม/YTD อาจเปลี่ยนแปลงเมื่อได้รับข้อมูลครบ
+      <div class="pb-list">${incompleteIdxs.map(i=>`${MO[i]}: `+PARTIAL_MONTHS[i].branches.map(x=>`${x.name} ล่าสุด ${x.lastDate}`).join(' · ')).join('<br>')}</div></div>`;
+  }else if(mi!=='a' && PARTIAL_MONTHS[parseInt(mi)]){
+    show=true;
+    const pm=PARTIAL_MONTHS[parseInt(mi)];
+    html=`<span class="pb-ic">⚠️</span><div><b>ข้อมูลเดือน${MO[parseInt(mi)]}ยังไม่ครบทั้งเดือน</b> — ตัวเลขเป็นข้อมูลสะสมถึงวันที่ล่าสุดที่มีการบันทึกของแต่ละสาขา
+      <div class="pb-list">${pm.branches.map(x=>`${x.name}: ข้อมูลล่าสุดถึง ${x.lastDate}`).join(' · ')}</div></div>`;
+  }
+  banner.classList.toggle('show',show);
+  banner.innerHTML=show?html:'';
 }
 
 /* ─── Insights ─────────────────────────────────────── */
@@ -750,6 +799,7 @@ function render(){
   const mi=document.getElementById('ms').value;
   const isAll=mi==='a';
   const lbl=filtLbl();
+  renderPartialBanner();
 
   // Toggle layout: ทั้งหมด = แถวแนวนอน bar+DR, รายเดือน = grid 2 คอล bar เท่านั้น
   document.getElementById('charts-grid').classList.toggle('monthly',!isAll);
@@ -835,12 +885,13 @@ function render(){
   renderCapacity(mi);
 
   // Insights
-  const monthLabel=isAll?'ทุกเดือน (ม.ค.–มิ.ย.)':MO[parseInt(mi)];
+  const monthLabel=isAll?`ทุกเดือน (${MO[0]}–${MO[MO.length-1]})`:MO[parseInt(mi)];
   document.getElementById('ins-title').innerHTML=
     `<span style="width:3px;height:14px;background:#1a4a9e;border-radius:2px;display:inline-block"></span> CEO Insights — ${monthLabel}`;
   document.getElementById('ins-container').innerHTML=genInsights(mi);
 }
 
+markIncompleteButtons();
 render();
 </script>
 </body>
