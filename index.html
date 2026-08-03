@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CEO Dashboard — คิวคอนกรีตส่งสินค้า ปี 2569</title>
+<title>Dashboard รายการส่งสินค้า 2569</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
@@ -89,7 +89,7 @@ body{font-family:'Sarabun',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size
 
 <div class="topbar">
   <div>
-    <h1>🚚 CEO Dashboard — คิวคอนกรีตส่งสินค้า ปี 2569</h1>
+    <h1>🚚 Dashboard รายการส่งสินค้า 2569</h1>
     <p>นาวัง + หนองปรือ + ปทุมธานี | คิวผลิต vs คิวส่ง รายผลิตภัณฑ์</p>
   </div>
   <span class="badge">📊 CEO Executive Dashboard — คิวส่งสินค้า</span>
@@ -108,6 +108,13 @@ body{font-family:'Sarabun',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size
     <button onclick="setMonth('5',this)">มิ.ย.</button>
     <button onclick="setMonth('6',this)">ก.ค.</button>
     <input type="hidden" id="ms" value="a">
+    <label style="margin-left:12px">🏭 กรองสาขา:</label>
+    <select id="branchFilter" onchange="render()">
+      <option value="a">ทั้งหมด (3 สาขา)</option>
+      <option value="nawang">นาวัง</option>
+      <option value="nongprue">หนองปรือ</option>
+      <option value="pathumthani">ปทุมธานี</option>
+    </select>
   </div>
 
   <div class="partial-banner" id="partial-banner"></div>
@@ -309,18 +316,7 @@ body{font-family:'Sarabun',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size
     <div class="card">
       <div class="ct">📊 ภาพรวมคิวจัดส่งสินค้าตามผลิตภัณฑ์ — กราฟแท่งรายเดือน</div>
       <div class="cs">เปรียบเทียบคิวส่งแยกตามผลิตภัณฑ์ แต่ละเดือน</div>
-      <div class="lg">
-        <span><span class="dot" style="background:#1a4a9e"></span>แผ่นพื้น(NW)</span>
-        <span><span class="dot" style="background:#4a3aa7"></span>ผนังรั้ว</span>
-        <span><span class="dot" style="background:#1baf7a"></span>บ่อพัก</span>
-        <span><span class="dot" style="background:#eda100"></span>ท่อกลม</span>
-        <span><span class="dot" style="background:#e34948"></span>บ๊อกซ์</span>
-        <span><span class="dot" style="background:#e87ba4"></span>ขอบคันหิน</span>
-        <span><span class="dot" style="background:#0aa3a3"></span>รางน้ำ</span>
-        <span><span class="dot" style="background:#f97316"></span>เสาเข็ม(NP)</span>
-        <span><span class="dot" style="background:#6d28d9"></span>แผ่นพื้น(PT)</span>
-        <span><span class="dot" style="background:#65a30d"></span>เสาเข็ม(PT)</span>
-      </div>
+      <div class="lg" id="stackLg"></div>
       <div class="cw" style="height:180px"><canvas id="c9"></canvas></div>
     </div>
   </div>
@@ -353,7 +349,7 @@ body{font-family:'Sarabun',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size
     </div>
     <div class="card">
       <div class="ct" id="ca2-ct">📦 Net Stock สะสม YTD รายสินค้า</div>
-      <div class="cs" id="ca2-cs">คิวผลิตรวม − คิวส่งรวม YTD | 🟠 สต็อกค้าง 🟢 ดึงสต็อกออก</div>
+      <div class="cs" id="ca2-cs">คิวผลิตรวม − คิวส่งรวม สะสมตั้งแต่ ม.ค. ถึง ก.ค. (รวม 7 เดือน) | 🟠 สต็อกค้าง 🟢 ดึงสต็อกออก</div>
       <div class="cw" style="height:210px"><canvas id="ca2"></canvas></div>
     </div>
   </div>
@@ -386,31 +382,57 @@ body{font-family:'Sarabun',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size
 <script>
 const MO=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.'];
 const D={
-  pp:{p:[1133.7,1050.63,1215.77,916.6,1263.6,1279.10,899.90],s:[1251.35,1009.67,1278.46,1275.33,1254.46,1362.19,930.60]},
-  pn:{p:[464.5,528.61,539.79,372.8,538.4,547.20,507.85],s:[305.54,628.72,464.89,337.9,590.63,509.31,392.86]},
-  bh:{p:[379.74,437.81,556.83,300.71,474.26,297.32,281.35],s:[365.72,326.26,513.43,399.49,533.24,336.51,255.05]},
-  th:{p:[2564.9,2761.4,2083.05,1801.25,2208.95,2178.06,882.50],s:[2454.93,1693.46,2994.65,2802.35,1900.37,1807.71,1519.54]},
-  bx:{p:[2026.7,2237.2,2716.26,1421.76,2536.13,2334.10,1021.95],s:[2237.42,2327.4,2654.24,1648.7,3243.2,1184.49,1213.54]},
-  kh:{p:[12.45,17.2,45.3,30.1,70.8,83.15,98.90],s:[0,0,0,0,0,109.94,14.12]},
-  rr:{p:[1.4,0,1.6,9.88,43.2,105.47,9.30],s:[0,0,0,0,0,0.74,0.00]},
-  sk:{p:[851,607.5,897,727,842.5,770,455.5],s:[797.754,779.989,898.351,640.027,640.911,1040.817,479.911]},
-  ppt:{p:[270.19,145.51,207.59,202.65,233.52,219.64,238.16],s:[236.30,225.72,272.17,248.33,218.93,231.05,188.74]},
-  skt:{p:[54.06,206.12,452.74,386.77,298.00,211.14,41.69],s:[165.86,225.48,271.59,329.10,464.53,266.61,131.514]},
+  pp:{p:[1133.7,1050.63,1215.77,916.6,1263.6,1279.10,1299.40],s:[1251.35,1009.67,1278.46,1275.33,1254.46,1362.19,1140.96]},
+  pn:{p:[464.5,528.61,539.79,372.8,538.4,547.20,685.40],s:[305.54,628.72,464.89,337.9,590.63,509.31,580.63]},
+  bh:{p:[379.74,437.81,556.83,300.71,474.26,297.32,389.00],s:[365.72,326.26,513.43,399.49,533.24,336.51,315.09]},
+  th:{p:[2564.9,2761.4,2083.05,1801.25,2208.95,2178.06,1724.80],s:[2454.93,1693.46,2994.65,2802.35,1900.37,1807.71,1884.18]},
+  bx:{p:[2026.7,2237.2,2716.26,1421.76,2536.13,2334.10,1494.95],s:[2237.42,2327.4,2654.24,1648.7,3243.2,1184.49,1503.26]},
+  kh:{p:[12.45,17.2,45.3,30.1,70.8,83.15,127.90],s:[0,0,0,0,0,109.94,16.97]},
+  rr:{p:[1.4,0,1.6,9.88,43.2,105.47,26.85],s:[0,0,0,0,0,0.74,0.00]},
+  sk:{p:[851,607.5,897,727,842.5,770,592.5],s:[797.754,779.989,898.351,640.027,640.911,1040.817,663.759]},
+  ppt:{p:[270.19,145.51,207.59,202.65,233.52,219.64,336.59],s:[236.30,225.72,272.17,248.33,218.93,231.05,278.21]},
+  skt:{p:[54.06,206.12,452.74,386.77,298.00,211.14,52.11],s:[165.86,225.48,271.59,329.10,464.53,266.61,171.999]},
 };
 
 // เดือนที่ข้อมูลยังไม่ครบทั้งเดือน (index ตรงกับ MO) — key = วันที่ล่าสุดที่มีข้อมูลจริงของแต่ละสาขา
 // เมื่อได้รับข้อมูลครบเดือนแล้ว ให้ลบ key นั้นออกจาก PARTIAL_MONTHS
-const PARTIAL_MONTHS={
-  6:{branches:[
-    {name:'นาวัง',lastDate:'22 ก.ค. 2569'},
-    {name:'หนองปรือ',lastDate:'24 ก.ค. 2569'},
-    {name:'ปทุมธานี',lastDate:'18 ก.ค. 2569'},
-  ]}
-};
+const PARTIAL_MONTHS={};
 
 const PNAMES=['แผ่นพื้น(นาวัง)','ผนังรั้ว/เสารั้ว','บ่อพัก','ท่อกลม','บ๊อกซ์คัลเวิร์ท','ขอบคันหิน','รางระบายน้ำ','เสาเข็ม(หนองปรือ)','แผ่นพื้น(ปทุมธานี)','เสาเข็ม(ปทุมธานี)'];
 const PKEYS=['pp','pn','bh','th','bx','kh','rr','sk','ppt','skt'];
 const PCLRS=['#1a4a9e','#4a3aa7','#1baf7a','#eda100','#e34948','#e87ba4','#0aa3a3','#f97316','#6d28d9','#65a30d'];
+
+/* ─── ตัวกรองสาขา ──────────────────────────────────── */
+const BRANCHES={
+  a:{name:'ทั้งหมด (3 สาขา)',keys:PKEYS},
+  nawang:{name:'นาวัง',keys:['pp','pn','bh','th','bx','kh','rr']},
+  nongprue:{name:'หนองปรือ',keys:['sk']},
+  pathumthani:{name:'ปทุมธานี',keys:['ppt','skt']},
+};
+const ROW_BRANCH={
+  'pp-row':'nawang','pn-row':'nawang','bh-row':'nawang','th-row':'nawang',
+  'bx-row':'nawang','kh-row':'nawang','rr-row':'nawang',
+  'sk-row':'nongprue','ppt-row':'pathumthani','skt-row':'pathumthani'
+};
+const SHORT_N_MAP=Object.fromEntries(PKEYS.map((k,i)=>[k,['แผ่นพื้น(NW)','ผนังรั้ว','บ่อพัก','ท่อกลม','บ๊อกซ์','ขอบคันหิน','รางน้ำ','เสาเข็ม(NP)','แผ่นพื้น(PT)','เสาเข็ม(PT)'][i]]));
+const CU_N_MAP=Object.fromEntries(PKEYS.map((k,i)=>[k,['แผ่นพื้น (นาวัง)','ผนังรั้ว (นาวัง)','บ่อพัก (นาวัง)','ท่อกลม (นาวัง)','บ๊อกซ์ (นาวัง)','ขอบคันหิน (นาวัง)','รางน้ำ (นาวัง)','เสาเข็ม (หนองปรือ)','แผ่นพื้น (ปทุมธานี)','เสาเข็ม (ปทุมธานี)'][i]]));
+const KPI_META={
+  pp:{cls:'blue',label:'คิวส่ง แผ่นพื้น',d:0},
+  pn:{cls:'purple',label:'คิวส่ง ผนังรั้ว/เสารั้ว',d:0},
+  bh:{cls:'teal',label:'คิวส่ง บ่อพัก',d:0},
+  th:{cls:'amber',label:'คิวส่ง ท่อกลม',d:0},
+  bx:{cls:'red',label:'คิวส่ง บ๊อกซ์คัลเวิร์ท',d:0},
+  kh:{cls:'pink',label:'คิวส่ง ขอบคันหิน',d:0},
+  rr:{cls:'cyan',label:'คิวส่ง รางระบายน้ำ',d:1},
+  sk:{cls:'orange',label:'คิวส่ง เสาเข็ม หนองปรือ',d:0},
+  ppt:{cls:'violet',label:'คิวส่ง แผ่นพื้น ปทุมธานี',d:0},
+  skt:{cls:'lime',label:'คิวส่ง เสาเข็ม ปทุมธานี',d:0},
+};
+const PIE_META={
+  pp:{label:'แผ่นพื้น(NW)',c:'#1a4a9e'},pn:{label:'ผนังรั้ว',c:'#4a3aa7'},bh:{label:'บ่อพัก',c:'#1baf7a'},
+  th:{label:'ท่อกลม',c:'#eda100'},bx:{label:'บ๊อกซ์',c:'#e34948'},kh:{label:'ขอบคันหิน',c:'#e87ba4'},
+  rr:{label:'รางน้ำ',c:'#0aa3a3'},sk:{label:'เสาเข็ม(NP)',c:'#f97316'},ppt:{label:'แผ่นพื้น(PT)',c:'#6d28d9'},skt:{label:'เสาเข็ม(PT)',c:'#65a30d'},
+};
 
 const sum=a=>a.reduce((x,y)=>x+y,0);
 const fmt=(v,d=0)=>v.toLocaleString('th-TH',{maximumFractionDigits:d});
@@ -482,7 +504,10 @@ function renderPartialBanner(){
 function iCard(c,icon,title,body){
   return `<div class="icard" style="border-color:${c}"><div class="it"><span class="icon">${icon}</span>${title}</div><div class="ix">${body}</div></div>`;
 }
-function genInsights(mi){
+function genInsights(mi,branch){
+  if(branch==='nawang') return genInsightsNawang(mi);
+  if(branch==='nongprue') return genInsightsNongprue(mi);
+  if(branch==='pathumthani') return genInsightsPathumthani(mi);
   const cards=[];
   if(mi==='a'){
     const totP=PKEYS.map(k=>sum(D[k].p)), totS=PKEYS.map(k=>sum(D[k].s));
@@ -554,6 +579,133 @@ function genInsights(mi){
   return cards.slice(0,6).join('');
 }
 
+/* ─── Insights รายสาขา (เมื่อกรองเฉพาะสาขา) ─────────── */
+const NAW_KEYS=['pp','pn','bh','th','bx','kh','rr'];
+const NAW_NAMES={pp:'แผ่นพื้น',pn:'ผนังรั้ว/เสารั้ว',bh:'บ่อพัก',th:'ท่อกลม',bx:'บ๊อกซ์คัลเวิร์ท',kh:'ขอบคันหิน',rr:'รางระบายน้ำ'};
+
+function genInsightsNawang(mi){
+  const cards=[];
+  if(mi==='a'){
+    const totP=NAW_KEYS.map(k=>sum(D[k].p)), totS=NAW_KEYS.map(k=>sum(D[k].s));
+    const topIdx=totS.indexOf(Math.max(...totS));
+    cards.push(iCard('#3b82f6','🏆',`${NAW_NAMES[NAW_KEYS[topIdx]]} — สินค้าหลักของนาวัง`,
+      `รวม ${MO.length} เดือน ผลิต ${fmt(totP[topIdx])} คิว ส่ง ${fmt(totS[topIdx])} คิว (Delivery Rate ${(totS[topIdx]/totP[topIdx]*100).toFixed(0)}%) สูงสุดในบรรดาสินค้านาวัง`));
+    const totalP=sum(totP), totalS=sum(totS), rate=totalP>0?totalS/totalP*100:0;
+    cards.push(iCard(rate>=90?'#10b981':rate>=70?'#f59e0b':'#ef4444',rate>=90?'✅':rate>=70?'📊':'⚠️','นาวัง — ภาพรวม YTD',
+      `ผลิตรวม ${fmt(totalP)} คิว ส่งรวม ${fmt(totalS)} คิว (Delivery Rate ${rate.toFixed(0)}%)`));
+    const bxRates=D.bx.p.map((p,i)=>p>0?D.bx.s[i]/p*100:null);
+    const validBx=bxRates.filter(r=>r!==null);
+    if(validBx.length){
+      const minBxRate=Math.min(...validBx), minBxIdx=bxRates.indexOf(minBxRate);
+      if(minBxRate<70) cards.push(iCard('#ef4444','🚨',`บ๊อกซ์คัลเวิร์ท — ส่งต่ำสุด ${MO[minBxIdx]} (${minBxRate.toFixed(0)}%)`,
+        `${MO[minBxIdx]} ผลิต ${fmt(D.bx.p[minBxIdx])} คิว แต่ส่งเพียง ${fmt(D.bx.s[minBxIdx])} คิว ควรตรวจสอบออเดอร์ลูกค้าและโลจิสติกส์`));
+    }
+    cards.push(iCard('#f59e0b','⚠️','ขอบคันหิน — ผลิตสะสมแต่เริ่มส่งช้า',
+      `ผลิตสะสม ${fmt(totP[NAW_KEYS.indexOf('kh')])} คิว ส่งรวม ${fmt(totS[NAW_KEYS.indexOf('kh')],2)} คิว (Delivery Rate ${(totS[NAW_KEYS.indexOf('kh')]/totP[NAW_KEYS.indexOf('kh')]*100).toFixed(0)}%)`));
+    cards.push(iCard('#f59e0b','🆕','รางระบายน้ำ — สินค้าใหม่ ดีมานด์ยังไม่ชัด',
+      `${MO[D.rr.p.length-1]} ผลิต ${fmt(D.rr.p[D.rr.p.length-1])} คิว | ส่งรวมสะสม ${fmt(sum(D.rr.s),2)} คิว ควรติดตามดีมานด์ตลาด`));
+  } else {
+    const i=parseInt(mi), month=MO[i];
+    const prod=NAW_KEYS.map(k=>D[k].p[i]), send=NAW_KEYS.map(k=>D[k].s[i]);
+    const totalP=sum(prod), totalS=sum(send), rate=totalP>0?totalS/totalP*100:0;
+    const oc=rate>=100?'#10b981':rate>=85?'#3b82f6':rate>=70?'#f59e0b':'#ef4444';
+    cards.push(iCard(oc,rate>=100?'✅':rate>=85?'📊':rate>=70?'⚠️':'🚨',`${month} — นาวัง ภาพรวมคิวส่งสินค้า`,
+      `ผลิตรวม ${fmt(totalP)} คิว | ส่งรวม ${fmt(totalS)} คิว | Delivery Rate ${rate.toFixed(1)}% — ${rate>=100?'ส่งเกินผลิต ดึงสต็อก':'สะสมสต็อก '+fmt(totalP-totalS)+' คิว'}`));
+    const topIdx=send.indexOf(Math.max(...send));
+    cards.push(iCard(PCLRS[PKEYS.indexOf(NAW_KEYS[topIdx])],'🏆',`${NAW_NAMES[NAW_KEYS[topIdx]]} — คิวส่งสูงสุดเดือนนี้`,
+      `ส่ง ${fmt(send[topIdx])} คิว จากผลิต ${fmt(prod[topIdx])} คิว (Delivery Rate ${(prod[topIdx]>0?send[topIdx]/prod[topIdx]*100:0).toFixed(0)}%)`));
+    const sigItems=prod.map((p,j)=>p>50?{r:send[j]/p*100,j}:null).filter(x=>x);
+    if(sigItems.length>1){
+      const worst=sigItems.reduce((a,b)=>a.r<b.r?a:b);
+      if(worst.r<85) cards.push(iCard(worst.r<55?'#ef4444':'#f59e0b',worst.r<55?'🚨':'⚠️',
+        `${NAW_NAMES[NAW_KEYS[worst.j]]} — Delivery Rate ต่ำสุด (${worst.r.toFixed(0)}%)`,
+        `ผลิต ${fmt(prod[worst.j])} คิว แต่ส่งเพียง ${fmt(send[worst.j])} คิว ควรตรวจสอบออเดอร์และโลจิสติกส์`));
+      else cards.push(iCard('#10b981','🎯','สินค้าทุกประเภทส่งมอบสม่ำเสมอ',
+        `${month} Delivery Rate ต่ำสุดอยู่ที่ ${worst.r.toFixed(0)}% (${NAW_NAMES[NAW_KEYS[worst.j]]}) สะท้อนการจัดการโลจิสติกส์ที่มีประสิทธิภาพ`));
+    }
+    if(i>0){
+      const prevTotal=sum(NAW_KEYS.map(k=>D[k].s[i-1]));
+      const momChange=prevTotal>0?(totalS-prevTotal)/prevTotal*100:0;
+      cards.push(iCard(momChange>=5?'#10b981':momChange>=-5?'#3b82f6':'#ef4444',momChange>=5?'📈':momChange>=-5?'➡️':'📉',
+        `เทียบ ${MO[i-1]} — คิวส่งรวม ${momChange>=0?'+':''}${momChange.toFixed(1)}%`,
+        `${MO[i-1]}: ${fmt(prevTotal)} คิว → ${month}: ${fmt(totalS)} คิว (${Math.abs(momChange).toFixed(1)}% ${momChange>=0?'เพิ่ม':'ลด'})`));
+    }
+    const noDeliv=NAW_KEYS.map((k,j)=>({name:NAW_NAMES[k],p:prod[j],s:send[j]})).filter(x=>x.p>10&&x.s===0);
+    if(noDeliv.length>0) cards.push(iCard('#f59e0b','⚠️',
+      `${noDeliv.map(x=>x.name).join(', ')} — ผลิตแต่ยังไม่มีรายการส่ง`,
+      `รวมผลิต ${fmt(sum(noDeliv.map(x=>x.p)))} คิว ยังไม่มีรายการส่ง อาจรอออเดอร์หรือลูกค้ายังไม่พร้อมรับ`));
+    else cards.push(iCard('#14b8a6','💡',`สต็อกสุทธิเดือน${month}`,
+      totalS>totalP?`ส่งเกินผลิต ${fmt(totalS-totalP)} คิว — มีสต็อกจากเดือนก่อนถูกดึงออกมาขาย`:`กำลังผลิตเกินส่ง ${fmt(totalP-totalS)} คิว — สต็อกสะสมเพิ่มในเดือนนี้`));
+  }
+  return cards.slice(0,6).join('');
+}
+
+function genInsightsNongprue(mi){
+  const cards=[];
+  if(mi==='a'){
+    const totP=sum(D.sk.p), totS=sum(D.sk.s), rate=totP>0?totS/totP*100:0;
+    cards.push(iCard(rate>=90?'#10b981':rate>=70?'#f59e0b':'#ef4444',rate>=90?'✅':rate>=70?'📊':'⚠️','เสาเข็มหนองปรือ — ภาพรวม YTD',
+      `ผลิตรวม ${fmt(totP)} คิว ส่งรวม ${fmt(totS,2)} คิว (Delivery Rate ${rate.toFixed(0)}%)`));
+    const maxIdx=D.sk.s.indexOf(Math.max(...D.sk.s));
+    const minIdx=D.sk.s.indexOf(Math.min(...D.sk.s));
+    cards.push(iCard('#f97316','📈',`เดือนส่งสูงสุด — ${MO[maxIdx]}`,
+      `ส่ง ${fmt(D.sk.s[maxIdx],2)} คิว จากผลิต ${fmt(D.sk.p[maxIdx])} คิว (Delivery Rate ${(D.sk.p[maxIdx]>0?D.sk.s[maxIdx]/D.sk.p[maxIdx]*100:0).toFixed(0)}%)`));
+    cards.push(iCard('#3b82f6','📉',`เดือนส่งต่ำสุด — ${MO[minIdx]}`,
+      `ส่ง ${fmt(D.sk.s[minIdx],2)} คิว จากผลิต ${fmt(D.sk.p[minIdx])} คิว (Delivery Rate ${(D.sk.p[minIdx]>0?D.sk.s[minIdx]/D.sk.p[minIdx]*100:0).toFixed(0)}%)`));
+  } else {
+    const i=parseInt(mi), month=MO[i];
+    const p=D.sk.p[i], s=D.sk.s[i], rate=p>0?s/p*100:0;
+    const oc=rate>=110?'#f59e0b':rate>=90?'#10b981':rate>=70?'#3b82f6':'#ef4444';
+    cards.push(iCard(oc,rate>=110?'📦':rate>=90?'✅':rate>=70?'📊':'⚠️',`${month} — เสาเข็มหนองปรือ Delivery Rate ${rate.toFixed(0)}%`,
+      `ผลิต ${fmt(p)} คิว | ส่ง ${fmt(s,3)} คิว — ${rate>=110?`ส่งเกินผลิต ${fmt(s-p)} คิว ดึงจากสต็อก`:rate<85?`ส่งต่ำกว่าผลิต ${fmt(p-s)} คิว`:'ส่งมอบสม่ำเสมอ'}`));
+    if(i>0){
+      const prevS=D.sk.s[i-1];
+      const momChange=prevS>0?(s-prevS)/prevS*100:0;
+      cards.push(iCard(momChange>=5?'#10b981':momChange>=-5?'#3b82f6':'#ef4444',momChange>=5?'📈':momChange>=-5?'➡️':'📉',
+        `เทียบ ${MO[i-1]} — คิวส่ง ${momChange>=0?'+':''}${momChange.toFixed(1)}%`,
+        `${MO[i-1]}: ${fmt(prevS,2)} คิว → ${month}: ${fmt(s,2)} คิว`));
+    }
+    const totP=sum(D.sk.p), totS=sum(D.sk.s), ytdRate=totP>0?totS/totP*100:0;
+    cards.push(iCard('#14b8a6','💡','เสาเข็มหนองปรือ — สะสม YTD',
+      `ผลิตสะสม ${fmt(totP)} คิว ส่งสะสม ${fmt(totS,2)} คิว (Delivery Rate ${ytdRate.toFixed(0)}%)`));
+  }
+  return cards.slice(0,6).join('');
+}
+
+function genInsightsPathumthani(mi){
+  const cards=[];
+  if(mi==='a'){
+    const pptTotP=sum(D.ppt.p),pptTotS=sum(D.ppt.s),pptRate=pptTotP>0?pptTotS/pptTotP*100:0;
+    const sktTotP=sum(D.skt.p),sktTotS=sum(D.skt.s),sktRate=sktTotP>0?sktTotS/sktTotP*100:0;
+    cards.push(iCard('#5b21b6','🏭','ปทุมธานี — สรุป YTD แผ่นพื้น + เสาเข็ม',
+      `แผ่นพื้น: ผลิต ${fmt(pptTotP)} คิว ส่ง ${fmt(pptTotS)} คิว (DR ${pptRate.toFixed(0)}%) | เสาเข็ม: ผลิต ${fmt(sktTotP)} คิว ส่ง ${fmt(sktTotS)} คิว (DR ${sktRate.toFixed(0)}%)`));
+    const maxPptIdx=D.ppt.s.indexOf(Math.max(...D.ppt.s));
+    cards.push(iCard('#6d28d9','📈',`แผ่นพื้น — เดือนส่งสูงสุด ${MO[maxPptIdx]}`,
+      `ส่ง ${fmt(D.ppt.s[maxPptIdx])} คิว จากผลิต ${fmt(D.ppt.p[maxPptIdx])} คิว`));
+    const maxSktIdx=D.skt.s.indexOf(Math.max(...D.skt.s));
+    cards.push(iCard('#65a30d','📈',`เสาเข็ม — เดือนส่งสูงสุด ${MO[maxSktIdx]}`,
+      `ส่ง ${fmt(D.skt.s[maxSktIdx])} คิว จากผลิต ${fmt(D.skt.p[maxSktIdx])} คิว`));
+  } else {
+    const i=parseInt(mi), month=MO[i];
+    const pptP=D.ppt.p[i],pptS=D.ppt.s[i],pptRt=pptP>0?pptS/pptP*100:0;
+    const sktP=D.skt.p[i],sktS=D.skt.s[i],sktRt=sktP>0?sktS/sktP*100:0;
+    cards.push(iCard('#5b21b6','🏭',`${month} — ปทุมธานี แผ่นพื้น DR ${pptRt.toFixed(0)}% | เสาเข็ม DR ${sktRt.toFixed(0)}%`,
+      `แผ่นพื้น ผลิต ${fmt(pptP,1)} ส่ง ${fmt(pptS,1)} คิว | เสาเข็ม ผลิต ${fmt(sktP,1)} ส่ง ${fmt(sktS,1)} คิว`));
+    if(i>0){
+      const prevPptS=D.ppt.s[i-1], prevSktS=D.skt.s[i-1];
+      const pptMom=prevPptS>0?(pptS-prevPptS)/prevPptS*100:0;
+      const sktMom=prevSktS>0?(sktS-prevSktS)/prevSktS*100:0;
+      cards.push(iCard('#3b82f6','📊',`เทียบ ${MO[i-1]}`,
+        `แผ่นพื้น ${pptMom>=0?'+':''}${pptMom.toFixed(1)}% | เสาเข็ม ${sktMom>=0?'+':''}${sktMom.toFixed(1)}%`));
+    }
+    const totPptP=sum(D.ppt.p),totPptS=sum(D.ppt.s),pptYtd=totPptP>0?totPptS/totPptP*100:0;
+    const totSktP=sum(D.skt.p),totSktS=sum(D.skt.s),sktYtd=totSktP>0?totSktS/totSktP*100:0;
+    cards.push(iCard('#14b8a6','💡','ปทุมธานี — สะสม YTD',
+      `แผ่นพื้น DR ${pptYtd.toFixed(0)}% | เสาเข็ม DR ${sktYtd.toFixed(0)}%`));
+  }
+  return cards.slice(0,6).join('');
+}
+
 /* ─── Capacity Data (กำลังผลิตเต็มที่ ปี 2569) ────────
    อิงจากตาราง "กำลังการผลิตเต็มที่ ปี 2569"
    หน่วย: คิว/เดือน (คิว/วัน × วันทำงาน ÷ 12)
@@ -569,17 +721,17 @@ function genInsights(mi){
 const CAP={pp:2760,pn:920,bh:1375,th:3200,bx:3800,kh:600,rr:460,sk:1540,ppt:1000,skt:2000};
 
 /* ─── Capacity Utilization Chart (responds to filter) */
-function renderCapacity(mi){
+function renderCapacity(mi,keys,branchName){
   const isAll=mi==='a';
   // Production data: filtered month or 6-month average
-  const prod=PKEYS.map(k=>{
+  const prod=keys.map(k=>{
     if(isAll){
       return +(sum(D[k].p)/MO.length).toFixed(0); // avg/month
     } else {
       return D[k].p[parseInt(mi)];
     }
   });
-  const cap=PKEYS.map(k=>CAP[k]);
+  const cap=keys.map(k=>CAP[k]);
   const cuPct=prod.map((p,i)=>cap[i]>0?+(p/cap[i]*100).toFixed(1):0);
   const remain=cuPct.map(v=>Math.max(0,+(100-v).toFixed(1)));
 
@@ -588,7 +740,7 @@ function renderCapacity(mi){
   const cuBg=cuPct.map(v=>v>=80?'#d1fae5':v>=60?'#dbeafe':v>=40?'#fef9c3':'#fee2e2');
 
   // Stacked horizontal bar: [utilized | remaining]
-  mk('ca4','bar',{labels:CU_N,datasets:[
+  mk('ca4','bar',{labels:keys.map(k=>CU_N_MAP[k]),datasets:[
     {label:'กำลังผลิตที่ใช้ (%)',data:cuPct,backgroundColor:cuColor,borderRadius:[4,0,0,4],borderSkipped:false},
     {label:'กำลังผลิตคงเหลือ',data:remain,backgroundColor:'#f3f4f6',borderRadius:[0,4,4,0],borderSkipped:false}
   ]},{
@@ -640,9 +792,10 @@ function renderCapacity(mi){
 
   // Update CU title
   const cuTitleEl=document.getElementById('cu-title');
-  if(cuTitleEl) cuTitleEl.textContent=isAll
+  const bSuf=branchName?` — ${branchName}`:'';
+  if(cuTitleEl) cuTitleEl.textContent=(isAll
     ?`กำลังผลิตที่ใช้จริง — เฉลี่ย ${MO.length} เดือน (${MO[0]}–${MO[MO.length-1]} 2569)`
-    :`กำลังผลิตที่ใช้จริง — ${MO[parseInt(mi)]} 2569`;
+    :`กำลังผลิตที่ใช้จริง — ${MO[parseInt(mi)]} 2569`)+bSuf;
 
   // Update CU legend colors
   const cuLegendEl=document.getElementById('cu-legend');
@@ -655,7 +808,7 @@ function renderCapacity(mi){
        <span><span class="dot" style="background:#3b82f6"></span>60–79%</span>
        <span><span class="dot" style="background:#f59e0b"></span>40–59%</span>
        <span><span class="dot" style="background:#f87171"></span>&lt;40% (ต่ำกว่าเกณฑ์)</span>
-       <span style="margin-left:auto;font-size:10px;color:#6b7280">เฉลี่ยรวม: <strong>${avgCU}%</strong> | สูงสุด: <strong>${SHORT_N[maxIdx]} ${cuPct[maxIdx]}%</strong> | ต่ำสุด: <strong>${SHORT_N[minIdx]} ${cuPct[minIdx]}%</strong></span>`;
+       <span style="margin-left:auto;font-size:10px;color:#6b7280">เฉลี่ยรวม: <strong>${avgCU}%</strong> | สูงสุด: <strong>${SHORT_N_MAP[keys[maxIdx]]} ${cuPct[maxIdx]}%</strong> | ต่ำสุด: <strong>${SHORT_N_MAP[keys[minIdx]]} ${cuPct[minIdx]}%</strong></span>`;
   }
 }
 
@@ -663,12 +816,12 @@ function renderCapacity(mi){
 const SHORT_N=['แผ่นพื้น(NW)','ผนังรั้ว','บ่อพัก','ท่อกลม','บ๊อกซ์','ขอบคันหิน','รางน้ำ','เสาเข็ม(NP)','แผ่นพื้น(PT)','เสาเข็ม(PT)'];
 const CU_N=['แผ่นพื้น (นาวัง)','ผนังรั้ว (นาวัง)','บ่อพัก (นาวัง)','ท่อกลม (นาวัง)','บ๊อกซ์ (นาวัง)','ขอบคันหิน (นาวัง)','รางน้ำ (นาวัง)','เสาเข็ม (หนองปรือ)','แผ่นพื้น (ปทุมธานี)','เสาเข็ม (ปทุมธานี)'];
 
-function renderAnalysis(mi){
+function renderAnalysis(mi,keys){
   const isAll=mi==='a';
   const selIdx=isAll?-1:parseInt(mi);
 
   // ── 1. DR HEATMAP — highlight selected month column ─
-  const rows=PKEYS.map((k,j)=>{
+  const rows=keys.map((k,j)=>{
     const cells=MO.map((_,i)=>{
       const p=D[k].p[i],s=D[k].s[i];
       const sel=!isAll&&i===selIdx;
@@ -680,7 +833,7 @@ function renderAnalysis(mi){
     const totP=sum(D[k].p),totS=sum(D[k].s);
     const avg=totP>0?totS/totP*100:0;
     const ac=avg>=100?'hm-g':avg>=90?'hm-lg':avg>=70?'hm-y':avg>=50?'hm-o':'hm-r';
-    return`<tr><td class="pname">${SHORT_N[j]}</td>${cells}<td class="${ac} hm-avg">${avg.toFixed(0)}%</td></tr>`;
+    return`<tr><td class="pname">${SHORT_N_MAP[k]}</td>${cells}<td class="${ac} hm-avg">${avg.toFixed(0)}%</td></tr>`;
   }).join('');
   document.getElementById('heatmap-container').innerHTML=`
     <table class="heatmap">
@@ -693,7 +846,7 @@ function renderAnalysis(mi){
     </table>`;
 
   // ── 2. MoM GROWTH — highlight selected month, dim others
-  const totSend=MO.map((_,i)=>+sum(PKEYS.map(k=>D[k].s[i])).toFixed(0));
+  const totSend=MO.map((_,i)=>+sum(keys.map(k=>D[k].s[i])).toFixed(0));
   const mom=totSend.map((v,i)=>i===0?null:+((v-totSend[i-1])/totSend[i-1]*100).toFixed(1));
   const barColors=totSend.map((_,i)=>{
     if(!isAll) return i===selIdx?(mom[i]===null?'#1d4ed8':mom[i]>=0?'#1d4ed8':'#dc2626'):'#e2e8f0';
@@ -726,17 +879,17 @@ function renderAnalysis(mi){
 
   // ── 3. NET STOCK — YTD หรือ เดือนที่เลือก ────────────
   const netStk=isAll
-    ?PKEYS.map(k=>+(sum(D[k].p)-sum(D[k].s)).toFixed(0))             // YTD
-    :PKEYS.map(k=>+(D[k].p[selIdx]-D[k].s[selIdx]).toFixed(1));      // monthly
+    ?keys.map(k=>+(sum(D[k].p)-sum(D[k].s)).toFixed(0))             // YTD
+    :keys.map(k=>+(D[k].p[selIdx]-D[k].s[selIdx]).toFixed(1));      // monthly
   const nClrs=netStk.map(v=>v>0?'#fb923c':v<0?'#34d399':'#93c5fd');
   // update title/subtitle
   const ca2ct=document.getElementById('ca2-ct');
   const ca2cs=document.getElementById('ca2-cs');
   if(ca2ct) ca2ct.textContent=isAll?'📦 Net Stock สะสม YTD รายสินค้า':`📦 Net Stock ${MO[selIdx]} รายสินค้า`;
   if(ca2cs) ca2cs.textContent=isAll
-    ?`คิวผลิตรวม − คิวส่งรวม ${MO.length} เดือน | 🟠 สต็อกค้าง 🟢 ดึงสต็อกออก`
-    :`คิวผลิต − คิวส่ง เดือน${MO[selIdx]} | 🟠 สต็อกค้าง 🟢 ส่งเกินผลิต`;
-  mk('ca2','bar',{labels:SHORT_N,datasets:[{
+    ?`คิวผลิตรวม − คิวส่งรวม สะสมตั้งแต่ ${MO[0]} ถึง ${MO[MO.length-1]} (รวม ${MO.length} เดือน) | 🟠 สต็อกค้าง 🟢 ดึงสต็อกออก`
+    :`คิวผลิต − คิวส่ง เฉพาะเดือน${MO[selIdx]} | 🟠 สต็อกค้าง 🟢 ส่งเกินผลิต`;
+  mk('ca2','bar',{labels:keys.map(k=>SHORT_N_MAP[k]),datasets:[{
     label:'Net Stock (คิว)',data:netStk,
     backgroundColor:nClrs,borderRadius:4
   }]},{
@@ -767,8 +920,8 @@ function renderAnalysis(mi){
   }
   const lastIdx=MO.length-1;
   const nextMoName=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][MO.length]||'เดือนหน้า';
-  const junAct=PKEYS.map(k=>D[k].s[lastIdx]);
-  const julFc=PKEYS.map(k=>linFc(D[k].s));
+  const junAct=keys.map(k=>D[k].s[lastIdx]);
+  const julFc=keys.map(k=>linFc(D[k].s));
   const fcColors=julFc.map((v,i)=>v>junAct[i]?'#fb923c':'#10b981');
   // legend
   document.getElementById('fc-legend').innerHTML=
@@ -776,11 +929,11 @@ function renderAnalysis(mi){
      <span><span class="dot" style="background:#fb923c"></span>${nextMoName} Forecast (สูงกว่า)</span>
      <span><span class="dot" style="background:#10b981"></span>${nextMoName} Forecast (ต่ำกว่า)</span>`;
   // note on biggest changes
-  const changes=julFc.map((v,i)=>({name:SHORT_N[i],diff:v-junAct[i],pct:junAct[i]>0?(v-junAct[i])/junAct[i]*100:0}));
+  const changes=julFc.map((v,i)=>({name:SHORT_N_MAP[keys[i]],diff:v-junAct[i],pct:junAct[i]>0?(v-junAct[i])/junAct[i]*100:0}));
   const top=changes.reduce((a,b)=>Math.abs(a.diff)>Math.abs(b.diff)?a:b);
   document.getElementById('fc-note').textContent=
     `* Forecast อิง Linear Trend 3 เดือนล่าสุด → ${nextMoName} | สินค้าที่เปลี่ยนแปลงมากที่สุด: ${top.name} (${top.diff>=0?'+':''}${top.diff.toLocaleString('th-TH')} คิว, ${top.pct>=0?'+':''}${top.pct.toFixed(0)}%)`;
-  mk('ca3','bar',{labels:SHORT_N,datasets:[
+  mk('ca3','bar',{labels:keys.map(k=>SHORT_N_MAP[k]),datasets:[
     {label:`${MO[lastIdx]} จริง`,data:junAct,backgroundColor:'#3b82f6',borderRadius:4},
     {label:`${nextMoName} Forecast`,data:julFc,backgroundColor:fcColors,borderRadius:4,
      borderWidth:1.5,borderColor:fcColors.map(c=>c),borderSkipped:false}
@@ -798,15 +951,24 @@ function renderAnalysis(mi){
 function render(){
   const mi=document.getElementById('ms').value;
   const isAll=mi==='a';
+  const branch=document.getElementById('branchFilter').value;
+  const keys=BRANCHES[branch].keys;
+  const branchSuffix=branch==='a'?'':` — ${BRANCHES[branch].name}`;
   const lbl=filtLbl();
   renderPartialBanner();
 
   // Toggle layout: ทั้งหมด = แถวแนวนอน bar+DR, รายเดือน = grid 2 คอล bar เท่านั้น
   document.getElementById('charts-grid').classList.toggle('monthly',!isAll);
   // Update section title
-  document.getElementById('chart-title').textContent=isAll
+  document.getElementById('chart-title').textContent=(isAll
     ?'กราฟรายผลิตภัณฑ์ — คิวผลิต vs คิวส่ง และ Delivery Rate รายเดือน'
-    :'กราฟรายผลิตภัณฑ์ — คิวผลิต vs คิวส่ง';
+    :'กราฟรายผลิตภัณฑ์ — คิวผลิต vs คิวส่ง')+branchSuffix;
+
+  // แสดง/ซ่อนแถวกราฟรายผลิตภัณฑ์ตามสาขาที่เลือก
+  Object.keys(ROW_BRANCH).forEach(rid=>{
+    const el=document.getElementById(rid);
+    if(el) el.style.display=(branch==='a'||ROW_BRANCH[rid]===branch)?'':'none';
+  });
 
   const pp={p:filt(D.pp.p),s:filt(D.pp.s)};
   const pn={p:filt(D.pn.p),s:filt(D.pn.s)};
@@ -822,19 +984,16 @@ function render(){
   const tSPP=sum(pp.s),tSPN=sum(pn.s),tSBH=sum(bh.s),tSTH=sum(th.s),tSBX=sum(bx.s),tSKH=sum(kh.s),tSRR=sum(rr.s),tSSK=sum(sk.s),tSPPT=sum(ppt.s),tSSKT=sum(skt.s);
   const tSAll=tSPP+tSPN+tSBH+tSTH+tSBX+tSKH+tSRR+tSSK+tSPPT+tSSKT;
 
-  document.getElementById('krow').innerHTML=`
-    <div class="kpi blue"><div class="kpi-l">คิวส่ง แผ่นพื้น</div><div class="kpi-v">${tSPP.toLocaleString('th-TH',{maximumFractionDigits:0})}</div><div class="kpi-s g">คิวคอนกรีต</div></div>
-    <div class="kpi purple"><div class="kpi-l">คิวส่ง ผนังรั้ว/เสารั้ว</div><div class="kpi-v">${tSPN.toLocaleString('th-TH',{maximumFractionDigits:0})}</div><div class="kpi-s g">คิวคอนกรีต</div></div>
-    <div class="kpi teal"><div class="kpi-l">คิวส่ง บ่อพัก</div><div class="kpi-v">${tSBH.toLocaleString('th-TH',{maximumFractionDigits:0})}</div><div class="kpi-s g">คิวคอนกรีต</div></div>
-    <div class="kpi amber"><div class="kpi-l">คิวส่ง ท่อกลม</div><div class="kpi-v">${tSTH.toLocaleString('th-TH',{maximumFractionDigits:0})}</div><div class="kpi-s g">คิวคอนกรีต</div></div>
-    <div class="kpi red"><div class="kpi-l">คิวส่ง บ๊อกซ์คัลเวิร์ท</div><div class="kpi-v">${tSBX.toLocaleString('th-TH',{maximumFractionDigits:0})}</div><div class="kpi-s g">คิวคอนกรีต</div></div>
-    <div class="kpi pink"><div class="kpi-l">คิวส่ง ขอบคันหิน</div><div class="kpi-v">${tSKH.toLocaleString('th-TH',{maximumFractionDigits:0})}</div><div class="kpi-s g">คิวคอนกรีต</div></div>
-    <div class="kpi cyan"><div class="kpi-l">คิวส่ง รางระบายน้ำ</div><div class="kpi-v">${tSRR.toLocaleString('th-TH',{maximumFractionDigits:1})}</div><div class="kpi-s g">คิวคอนกรีต</div></div>
-    <div class="kpi orange"><div class="kpi-l">คิวส่ง เสาเข็ม หนองปรือ</div><div class="kpi-v">${tSSK.toLocaleString('th-TH',{maximumFractionDigits:0})}</div><div class="kpi-s g">คิวคอนกรีต</div></div>
-    <div class="kpi violet"><div class="kpi-l">คิวส่ง แผ่นพื้น ปทุมธานี</div><div class="kpi-v">${tSPPT.toLocaleString('th-TH',{maximumFractionDigits:0})}</div><div class="kpi-s g">คิวคอนกรีต</div></div>
-    <div class="kpi lime"><div class="kpi-l">คิวส่ง เสาเข็ม ปทุมธานี</div><div class="kpi-v">${tSSKT.toLocaleString('th-TH',{maximumFractionDigits:0})}</div><div class="kpi-s g">คิวคอนกรีต</div></div>
-    <div class="kpi green"><div class="kpi-l">คิวส่งรวมทุกสินค้า</div><div class="kpi-v">${tSAll.toLocaleString('th-TH',{maximumFractionDigits:0})}</div><div class="kpi-s p">▲ รวมทุกสาขา</div></div>
-  `;
+  const tSMap={pp:tSPP,pn:tSPN,bh:tSBH,th:tSTH,bx:tSBX,kh:tSKH,rr:tSRR,sk:tSSK,ppt:tSPPT,skt:tSSKT};
+  const activeTotal=keys.reduce((a,k)=>a+tSMap[k],0);
+  const kpiCards=keys.map(k=>{
+    const m=KPI_META[k];
+    return `<div class="kpi ${m.cls}"><div class="kpi-l">${m.label}</div><div class="kpi-v">${tSMap[k].toLocaleString('th-TH',{maximumFractionDigits:m.d})}</div><div class="kpi-s g">คิวคอนกรีต</div></div>`;
+  }).join('');
+  const totalLabel=branch==='a'?'คิวส่งรวมทุกสินค้า':`คิวส่งรวม — ${BRANCHES[branch].name}`;
+  const totalSub=branch==='a'?'▲ รวมทุกสาขา':`▲ สาขา${BRANCHES[branch].name}`;
+  document.getElementById('krow').innerHTML=kpiCards+
+    `<div class="kpi green"><div class="kpi-l">${totalLabel}</div><div class="kpi-v">${activeTotal.toLocaleString('th-TH',{maximumFractionDigits:0})}</div><div class="kpi-s p">${totalSub}</div></div>`;
 
   // Bar charts
   mk('c1','bar',{labels:lbl,datasets:[{label:'คิวผลิต',data:pp.p,backgroundColor:'#1a4a9e',borderRadius:4},{label:'คิวส่ง',data:pp.s,backgroundColor:'#5b9bd5',borderRadius:4}]},ax());
@@ -860,35 +1019,26 @@ function render(){
   mk('c23','line',drData(lbl,ppt.p,ppt.s,'#6d28d9'),axPct());
   mk('c24','line',drData(lbl,skt.p,skt.s,'#65a30d'),axPct());
 
-  // Pie
-  const pieVals=[tSPP,tSPN,tSBH,tSTH,tSBX,tSKH,tSRR,tSSK,tSPPT,tSSKT];
-  const pieLbls=['แผ่นพื้น(NW)','ผนังรั้ว','บ่อพัก','ท่อกลม','บ๊อกซ์','ขอบคันหิน','รางน้ำ','เสาเข็ม(NP)','แผ่นพื้น(PT)','เสาเข็ม(PT)'];
-  const pieClrs=['#1a4a9e','#4a3aa7','#1baf7a','#eda100','#e34948','#e87ba4','#0aa3a3','#f97316','#6d28d9','#65a30d'];
+  // Pie + Stacked (กรองตามสาขาที่เลือก)
+  const sMap={pp:pp.s,pn:pn.s,bh:bh.s,th:th.s,bx:bx.s,kh:kh.s,rr:rr.s,sk:sk.s,ppt:ppt.s,skt:skt.s};
+  const pieVals=keys.map(k=>tSMap[k]);
+  const pieLbls=keys.map(k=>PIE_META[k].label);
+  const pieClrs=keys.map(k=>PIE_META[k].c);
   const tot=sum(pieVals);
   document.getElementById('pieLg').innerHTML=pieLbls.map((l,i)=>`<span><span class="dot" style="background:${pieClrs[i]}"></span>${l} ${tot>0?((pieVals[i]/tot)*100).toFixed(0):0}%</span>`).join('');
   mk('c8','doughnut',{labels:pieLbls,datasets:[{data:pieVals,backgroundColor:pieClrs,borderWidth:3,borderColor:'#fff'}]},{cutout:'55%'});
-  mk('c9','bar',{labels:lbl,datasets:[
-    {label:'แผ่นพื้น',data:pp.s,backgroundColor:'#1a4a9e',borderRadius:2},
-    {label:'ผนังรั้ว',data:pn.s,backgroundColor:'#4a3aa7',borderRadius:2},
-    {label:'บ่อพัก',data:bh.s,backgroundColor:'#1baf7a',borderRadius:2},
-    {label:'ท่อกลม',data:th.s,backgroundColor:'#eda100',borderRadius:2},
-    {label:'บ๊อกซ์',data:bx.s,backgroundColor:'#e34948',borderRadius:2},
-    {label:'ขอบคันหิน',data:kh.s,backgroundColor:'#e87ba4',borderRadius:2},
-    {label:'รางน้ำ',data:rr.s,backgroundColor:'#0aa3a3',borderRadius:2},
-    {label:'เสาเข็ม(NP)',data:sk.s,backgroundColor:'#f97316',borderRadius:2},
-    {label:'แผ่นพื้น(PT)',data:ppt.s,backgroundColor:'#6d28d9',borderRadius:2},
-    {label:'เสาเข็ม(PT)',data:skt.s,backgroundColor:'#65a30d',borderRadius:2},
-  ]},ax());
+  document.getElementById('stackLg').innerHTML=keys.map(k=>`<span><span class="dot" style="background:${PIE_META[k].c}"></span>${PIE_META[k].label}</span>`).join('');
+  mk('c9','bar',{labels:lbl,datasets:keys.map(k=>({label:PIE_META[k].label,data:sMap[k],backgroundColor:PIE_META[k].c,borderRadius:2}))},ax());
 
   // Analysis & Capacity charts
-  renderAnalysis(mi);
-  renderCapacity(mi);
+  renderAnalysis(mi,keys);
+  renderCapacity(mi,keys,branch==='a'?'':BRANCHES[branch].name);
 
   // Insights
   const monthLabel=isAll?`ทุกเดือน (${MO[0]}–${MO[MO.length-1]})`:MO[parseInt(mi)];
   document.getElementById('ins-title').innerHTML=
-    `<span style="width:3px;height:14px;background:#1a4a9e;border-radius:2px;display:inline-block"></span> CEO Insights — ${monthLabel}`;
-  document.getElementById('ins-container').innerHTML=genInsights(mi);
+    `<span style="width:3px;height:14px;background:#1a4a9e;border-radius:2px;display:inline-block"></span> CEO Insights — ${monthLabel}${branchSuffix}`;
+  document.getElementById('ins-container').innerHTML=genInsights(mi,branch);
 }
 
 markIncompleteButtons();
