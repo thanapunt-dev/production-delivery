@@ -365,14 +365,14 @@ body{font-family:'Sarabun',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size
     <div class="analysis-note" id="fc-note"></div>
   </div>
 
-  <!-- ════ Capacity Utilization ════ -->
-  <div class="sec-title" style="margin-top:28px">⚙️ Capacity Utilization — กำลังผลิตที่ใช้จริง</div>
+  <!-- ════ Delivery Rate Ranking ════ -->
+  <div class="sec-title" style="margin-top:28px">🏆 Delivery Rate Ranking — เรียงลำดับประสิทธิภาพการส่งสินค้า</div>
   <div class="card g1" style="margin-bottom:14px">
-    <div class="ct" id="cu-title">กำลังผลิตที่ใช้จริง — เฉลี่ย YTD</div>
-    <div class="cs">คิวผลิตจริง ÷ กำลังผลิตเต็มที่ (คิว/เดือน) × 100% | อิงจากตารางกำลังการผลิตเต็มที่ปี 2569</div>
-    <div class="lg" id="cu-legend" style="justify-content:flex-start;flex-wrap:wrap"></div>
+    <div class="ct" id="dr-title">Delivery Rate — เฉลี่ย YTD</div>
+    <div class="cs">คิวส่งจริง ÷ คิวผลิตจริง × 100% | เรียงจากสูงสุด → ต่ำสุด</div>
+    <div class="lg" id="dr-legend" style="justify-content:flex-start;flex-wrap:wrap"></div>
     <div class="cw" style="height:290px;margin-top:6px"><canvas id="ca4"></canvas></div>
-    <div class="analysis-note">* ท่อกลมและบ๊อกซ์มีกำลังผลิตรวม 3 สายการผลิต CU% ต่ำสะท้อนการใช้เพียงบางสายในแต่ละเดือน | ปทุมธานี: แผ่นพื้น 1,000 / เสาเข็ม 2,000 คิว/เดือน (50/100 คิว/วัน × 240 วัน)</div>
+    <div class="analysis-note">* Delivery Rate ≥100% หมายถึงส่งได้มากกว่าที่ผลิตในช่วงนั้น (ดึงสต็อกค้างออกไปส่งด้วย) | คำนวณจากยอดสะสมของแต่ละสินค้าในช่วงที่กรองอยู่</div>
   </div>
 
   <!-- Insights -->
@@ -708,109 +708,74 @@ function genInsightsPathumthani(mi){
   return cards.slice(0,6).join('');
 }
 
-/* ─── Capacity Data (กำลังผลิตเต็มที่ ปี 2569) ────────
-   อิงจากตาราง "กำลังการผลิตเต็มที่ ปี 2569"
-   หน่วย: คิว/เดือน (คิว/วัน × วันทำงาน ÷ 12)
-   pp: แผ่นพื้น นาวัง 120คิว/วัน×276วัน÷12 = 2,760
-   pn: รั้ว+LW นาวัง (20+20)×276÷12 = 920
-   bh: บ่อพัก นาวัง 25×276÷12 = 575
-   th: ท่อกลม นาวัง (120+150+120)×240÷12 = 7,800
-   bx: บ๊อกซ์/P5 นาวัง 295×240÷12 = 5,900
-   kh: คันหิน นาวัง 30×240÷12 = 600
-   rr: รางระบายน้ำ นาวัง 20×276÷12 = 460
-   sk: เสาเข็ม หนองปรือ 70×264÷12 = 1,540
-──────────────────────────────────────────────────── */
-const CAP={pp:2760,pn:920,bh:1375,th:3200,bx:3800,kh:600,rr:460,sk:1540,ppt:1000,skt:2000};
-
-/* ─── Capacity Utilization Chart (responds to filter) */
-function renderCapacity(mi,keys,branchName){
+/* ─── Delivery Rate Ranking Chart (responds to filter) ─── */
+function renderDeliveryRanking(mi,keys,branchName){
   const isAll=mi==='a';
-  // Production data: filtered month or 6-month average
-  const prod=keys.map(k=>{
-    if(isAll){
-      return +(sum(D[k].p)/MO.length).toFixed(0); // avg/month
-    } else {
-      return D[k].p[parseInt(mi)];
-    }
-  });
-  const cap=keys.map(k=>CAP[k]);
-  const cuPct=prod.map((p,i)=>cap[i]>0?+(p/cap[i]*100).toFixed(1):0);
-  const remain=cuPct.map(v=>Math.max(0,+(100-v).toFixed(1)));
+  const prod=keys.map(k=>isAll?sum(D[k].p):D[k].p[parseInt(mi)]);
+  const send=keys.map(k=>isAll?sum(D[k].s):D[k].s[parseInt(mi)]);
+  const rate=prod.map((p,i)=>p>0?+(send[i]/p*100).toFixed(1):0);
 
-  // Color by utilization level
-  const cuColor=cuPct.map(v=>v>=80?'#10b981':v>=60?'#3b82f6':v>=40?'#f59e0b':'#f87171');
-  const cuBg=cuPct.map(v=>v>=80?'#d1fae5':v>=60?'#dbeafe':v>=40?'#fef9c3':'#fee2e2');
+  // Sort descending by Delivery Rate, keep label/prod/send in sync
+  const order=keys.map((k,i)=>i).sort((a,b)=>rate[b]-rate[a]);
+  const sLabels=order.map(i=>CU_N_MAP[keys[i]]);
+  const sRate=order.map(i=>rate[i]);
+  const sProd=order.map(i=>prod[i]);
+  const sSend=order.map(i=>send[i]);
 
-  // Stacked horizontal bar: [utilized | remaining]
-  mk('ca4','bar',{labels:keys.map(k=>CU_N_MAP[k]),datasets:[
-    {label:'กำลังผลิตที่ใช้ (%)',data:cuPct,backgroundColor:cuColor,borderRadius:[4,0,0,4],borderSkipped:false},
-    {label:'กำลังผลิตคงเหลือ',data:remain,backgroundColor:'#f3f4f6',borderRadius:[0,4,4,0],borderSkipped:false}
+  const drColor=v=>v>=100?'#10b981':v>=85?'#3b82f6':v>=70?'#f59e0b':'#f87171';
+  const barColor=sRate.map(drColor);
+
+  mk('ca4','bar',{labels:sLabels,datasets:[
+    {label:'Delivery Rate (%)',data:sRate,backgroundColor:barColor,borderRadius:4}
   ]},{
     indexAxis:'y',
     scales:{
-      x:{stacked:true,max:100,ticks:{font:{size:10},color:'#6b7280',callback:v=>v+'%'},
-         grid:{color:'#f3f4f6'},border:{display:false}},
-      y:{stacked:true,ticks:{font:{size:10},color:'#374151'},grid:{display:false},border:{display:false}}
+      x:{ticks:{font:{size:10},color:'#6b7280',callback:v=>v+'%'},grid:{color:'#f3f4f6'},border:{display:false}},
+      y:{ticks:{font:{size:10},color:'#374151'},grid:{display:false},border:{display:false}}
     },
     plugins:{
       legend:{display:false},
       tooltip:{callbacks:{
         label:ctx=>{
-          if(ctx.datasetIndex===0){
-            const i=ctx.dataIndex;
-            const pv=prod[i],cv=cap[i];
-            return [`CU: ${ctx.parsed.x}% (ผลิต ${pv.toLocaleString('th-TH')} ÷ กำลัง ${cv.toLocaleString('th-TH')} คิว)`];
-          }
-          return [`กำลังคงเหลือ: ${ctx.parsed.x.toFixed(1)}%`];
+          const i=ctx.dataIndex;
+          return [`Delivery Rate: ${ctx.parsed.x}%`,`ส่ง ${sSend[i].toLocaleString('th-TH')} / ผลิต ${sProd[i].toLocaleString('th-TH')} คิว`];
         }
-      }},
-      afterDraw:undefined
+      }}
     },
     animation:{onComplete:function(ctx){
-      // draw % labels inside bars
       const chart=ctx.chart;
       const meta=chart.getDatasetMeta(0);
       chart.ctx.save();
       chart.ctx.font='bold 11px Sarabun,sans-serif';
-      chart.ctx.fillStyle='#fff';
+      chart.ctx.fillStyle='#374151';
       chart.ctx.textBaseline='middle';
       meta.data.forEach((bar,i)=>{
-        const v=cuPct[i];
-        if(v<8) return;
-        const x=bar.x-((bar.x-bar.base)/2);
-        const y=bar.y;
-        chart.ctx.fillText(v+'%',x-14,y);
-      });
-      // also draw capacity numbers to the right
-      chart.ctx.fillStyle='#6b7280';
-      chart.ctx.font='10px Sarabun,sans-serif';
-      meta.data.forEach((bar,i)=>{
-        const totalBar=chart.getDatasetMeta(1).data[i];
-        if(totalBar) chart.ctx.fillText(`${prod[i].toLocaleString('th-TH')}/${cap[i].toLocaleString('th-TH')}`,totalBar.x+4,bar.y);
+        chart.ctx.fillText(sRate[i]+'%',bar.x+6,bar.y);
       });
       chart.ctx.restore();
     }}
   });
 
-  // Update CU title
-  const cuTitleEl=document.getElementById('cu-title');
+  // Update title
+  const drTitleEl=document.getElementById('dr-title');
   const bSuf=branchName?` — ${branchName}`:'';
-  if(cuTitleEl) cuTitleEl.textContent=(isAll
-    ?`กำลังผลิตที่ใช้จริง — เฉลี่ย ${MO.length} เดือน (${MO[0]}–${MO[MO.length-1]} 2569)`
-    :`กำลังผลิตที่ใช้จริง — ${MO[parseInt(mi)]} 2569`)+bSuf;
+  if(drTitleEl) drTitleEl.textContent=(isAll
+    ?`Delivery Rate — สะสม ${MO[0]}–${MO[MO.length-1]} 2569`
+    :`Delivery Rate — ${MO[parseInt(mi)]} 2569`)+bSuf;
 
-  // Update CU legend colors
-  const cuLegendEl=document.getElementById('cu-legend');
-  if(cuLegendEl){
-    const avgCU=(sum(cuPct)/cuPct.length).toFixed(1);
-    const maxIdx=cuPct.indexOf(Math.max(...cuPct));
-    const minIdx=cuPct.indexOf(Math.min(...cuPct));
-    cuLegendEl.innerHTML=
-      `<span><span class="dot" style="background:#10b981"></span>≥80% (เต็มประสิทธิภาพ)</span>
-       <span><span class="dot" style="background:#3b82f6"></span>60–79%</span>
-       <span><span class="dot" style="background:#f59e0b"></span>40–59%</span>
-       <span><span class="dot" style="background:#f87171"></span>&lt;40% (ต่ำกว่าเกณฑ์)</span>
-       <span style="margin-left:auto;font-size:10px;color:#6b7280">เฉลี่ยรวม: <strong>${avgCU}%</strong> | สูงสุด: <strong>${SHORT_N_MAP[keys[maxIdx]]} ${cuPct[maxIdx]}%</strong> | ต่ำสุด: <strong>${SHORT_N_MAP[keys[minIdx]]} ${cuPct[minIdx]}%</strong></span>`;
+  // Update legend
+  const drLegendEl=document.getElementById('dr-legend');
+  if(drLegendEl){
+    const totP=sum(prod), totS=sum(send);
+    const avgDR=totP>0?(totS/totP*100).toFixed(1):'0.0';
+    const maxLabel=sLabels[0], maxVal=sRate[0];
+    const minLabel=sLabels[sLabels.length-1], minVal=sRate[sRate.length-1];
+    drLegendEl.innerHTML=
+      `<span><span class="dot" style="background:#10b981"></span>≥100% (ส่งครบ/เกินผลิต)</span>
+       <span><span class="dot" style="background:#3b82f6"></span>85–99%</span>
+       <span><span class="dot" style="background:#f59e0b"></span>70–84%</span>
+       <span><span class="dot" style="background:#f87171"></span>&lt;70% (ต่ำกว่าเกณฑ์)</span>
+       <span style="margin-left:auto;font-size:10px;color:#6b7280">เฉลี่ยรวม: <strong>${avgDR}%</strong> | สูงสุด: <strong>${maxLabel} ${maxVal}%</strong> | ต่ำสุด: <strong>${minLabel} ${minVal}%</strong></span>`;
   }
 }
 
@@ -985,15 +950,23 @@ function render(){
 
   const tSPP=sum(pp.s),tSPN=sum(pn.s),tSBH=sum(bh.s),tSTH=sum(th.s),tSBX=sum(bx.s),tSKH=sum(kh.s),tSRR=sum(rr.s),tSSK=sum(sk.s),tSPPT=sum(ppt.s),tSSKT=sum(skt.s);
   const tSAll=tSPP+tSPN+tSBH+tSTH+tSBX+tSKH+tSRR+tSSK+tSPPT+tSSKT;
+  const tPPP=sum(pp.p),tPPN=sum(pn.p),tPBH=sum(bh.p),tPTH=sum(th.p),tPBX=sum(bx.p),tPKH=sum(kh.p),tPRR=sum(rr.p),tPSK=sum(sk.p),tPPPT=sum(ppt.p),tPSKT=sum(skt.p);
 
   const tSMap={pp:tSPP,pn:tSPN,bh:tSBH,th:tSTH,bx:tSBX,kh:tSKH,rr:tSRR,sk:tSSK,ppt:tSPPT,skt:tSSKT};
+  const tPMap={pp:tPPP,pn:tPPN,bh:tPBH,th:tPTH,bx:tPBX,kh:tPKH,rr:tPRR,sk:tPSK,ppt:tPPPT,skt:tPSKT};
   const activeTotal=keys.reduce((a,k)=>a+tSMap[k],0);
+  const activeTotalP=keys.reduce((a,k)=>a+tPMap[k],0);
+  const drColor=r=>r>=100?'#10b981':r>=85?'#3b82f6':r>=70?'#f59e0b':'#ef4444';
   const kpiCards=keys.map(k=>{
     const m=KPI_META[k];
-    return `<div class="kpi ${m.cls}"><div class="kpi-l">${m.label}</div><div class="kpi-v">${tSMap[k].toLocaleString('th-TH',{maximumFractionDigits:m.d})}</div><div class="kpi-s g">คิวคอนกรีต</div></div>`;
+    const p=tPMap[k], s=tSMap[k];
+    const rate=p>0?(s/p*100):null;
+    const drLine=rate===null?'':`<div class="kpi-s" style="color:${drColor(rate)};font-weight:600">Delivery Rate ${rate.toFixed(1)}%</div>`;
+    return `<div class="kpi ${m.cls}"><div class="kpi-l">${m.label}</div><div class="kpi-v">${tSMap[k].toLocaleString('th-TH',{maximumFractionDigits:m.d})}</div><div class="kpi-s g">คิวผลิต ${tPMap[k].toLocaleString('th-TH',{maximumFractionDigits:m.d})} คิว</div>${drLine}</div>`;
   }).join('');
   const totalLabel=branch==='a'?'คิวส่งรวมทุกสินค้า':`คิวส่งรวม — ${BRANCHES[branch].name}`;
-  const totalSub=branch==='a'?'▲ รวมทุกสาขา':`▲ สาขา${BRANCHES[branch].name}`;
+  const totalRate=activeTotalP>0?(activeTotal/activeTotalP*100):null;
+  const totalSub=(branch==='a'?`▲ คิวผลิตรวม ${activeTotalP.toLocaleString('th-TH',{maximumFractionDigits:0})} คิว`:`▲ ผลิต ${activeTotalP.toLocaleString('th-TH',{maximumFractionDigits:0})} คิว — สาขา${BRANCHES[branch].name}`)+(totalRate===null?'':` | Delivery Rate ${totalRate.toFixed(1)}%`);
   document.getElementById('krow').innerHTML=kpiCards+
     `<div class="kpi green"><div class="kpi-l">${totalLabel}</div><div class="kpi-v">${activeTotal.toLocaleString('th-TH',{maximumFractionDigits:0})}</div><div class="kpi-s p">${totalSub}</div></div>`;
 
@@ -1034,7 +1007,7 @@ function render(){
 
   // Analysis & Capacity charts
   renderAnalysis(mi,keys);
-  renderCapacity(mi,keys,branch==='a'?'':BRANCHES[branch].name);
+  renderDeliveryRanking(mi,keys,branch==='a'?'':BRANCHES[branch].name);
 
   // Insights
   const monthLabel=isAll?`ทุกเดือน (${MO[0]}–${MO[MO.length-1]})`:MO[parseInt(mi)];
